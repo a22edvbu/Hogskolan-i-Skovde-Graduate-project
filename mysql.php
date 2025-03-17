@@ -24,6 +24,18 @@
         } catch(PDOException $e) {
             echo "Connection failed: " . $e->getMessage();
         }
+
+        // Insert function
+        // Takes the inputs from the form and connects them to the table attributes
+        if (isset($_POST['sqlName'])) {
+            $querystring = 'INSERT INTO test_table (namn, pnr, bday, notes) VALUES (:NAME, :PNR, :BDAY, :NOTES);';
+            $stmt = $pdo->prepare($querystring);
+            $stmt->bindParam(':NAME', $_POST['sqlName']);
+            $stmt->bindParam(':PNR', $_POST['sqlID']);
+            $stmt->bindParam(':BDAY', $_POST['sqlBday']);
+            $stmt->bindParam(':NOTES', $_POST['sqlNotes']);
+            $stmt->execute();
+        }
     ?>
     <h1>MySQL</h1>
     <p>
