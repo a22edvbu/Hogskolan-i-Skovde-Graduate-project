@@ -14,7 +14,7 @@
         $servername = "localhost";
         $username = "root";
         $password = "";
-    
+
         // DB connect
         try {
             $pdo = new PDO("mysql:host=$servername;dbname=examensdb", $username, $password);
@@ -29,5 +29,30 @@
     <p>
         <div class="homeBtn"><a href="index.php">Home</a></div>
     </p>
+    <h2>
+        MySQL Database:
+    </h2>
+    <?php
+    // prints out the contents of a table
+        echo "<Table>";
+            echo "<thead>";
+                echo "<tr>";
+                    echo "<th> Namn</th>";
+                    echo "<th> PersonNr </th>";
+                    echo "<th> Född </th>";
+                    echo "<th> Notes </th>";  
+                echo "</tr>";             
+            echo "</thead>";
+            foreach($pdo->query('select * from test_table', PDO::FETCH_ASSOC) AS $row) {
+                echo "<tr>";
+                foreach ($row as $col=>$val) {
+                    echo "<td>";
+                    echo $val;
+                    echo "</td>";
+                }
+                echo "</tr>";
+            } 
+        echo "</Table>";
+    ?>
 </body>
 </html>
