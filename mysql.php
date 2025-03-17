@@ -32,6 +32,22 @@
     <h2>
         MySQL Database:
     </h2>
+    <h3>Insert:</h3>
+    <form action='mysql.php' method='POST' id="sqlPostForm">
+        <label for="sqlName">Name: </label>
+        <input type="text" name="sqlName" id="sqlName">
+
+        <label for="sqlID">ID: </label>
+        <input type="text" name="sqlID" id="sqlID">
+        
+        <label for="sqlBday">Birthday: </label>
+        <input type="text" name="sqlBday" id="sqlBday">
+        
+        <label for="sqlNotes">Notes: </label>
+        <input type="text" name="sqlNotes" id="sqlNotes">
+
+        <input type="submit" value="Insert">
+    </form>
     <?php
     // prints out the contents of a table
         echo "<Table>";

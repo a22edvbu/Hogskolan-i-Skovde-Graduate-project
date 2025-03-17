@@ -1,0 +1,25 @@
+h1, h2, h3{
+    text-align: center;
+}
+
+#sqlPostForm{
+    margin: 0 auto;
+    text-align: center;
+}
+
+table {
+    margin: 0 auto;
+    margin-top: 10px;
+    width: 75%;
+    text-align: center;
+    border-spacing: unset;
+    border: 1px solid black;
+}
+th {
+    background-color: #aca4b0;
+    color: white;
+    border: 1px solid black;
+}
+tr:nth-child(odd) {
+    background-color: #dbd1e0;
+}
