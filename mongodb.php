@@ -8,7 +8,22 @@
 </head>
 <body>
     <?php
+        // Composer autoloader for php extensions and libraries 
+        require 'vendor/autoload.php';
 
+        // Connects to MongoDB through XAMPP server with feedback
+        try {
+            $client = new MongoDB\Client("mongodb://localhost:27017");
+            echo "Connected to MongoDB successfully!";
+
+            // Fetches email from emails collection in examensDB
+            $collection = $client->examensDB->emails;
+        } catch (Exception $e) {
+            echo "Connection failed: " . $e->getMessage();
+        }
+
+        
+        
     ?>
     <h1>MongoDB</h1>
     <p>
@@ -33,5 +48,37 @@
 
         <input type="submit" value="Insert">
     </form>
+    <?php
+    // prints out the contents of a table
+        echo "<Table>";
+            echo "<thead>";
+                echo "<tr>";
+                    echo "<th> _ID</th>";
+                    echo "<th> ID</th>";
+                    echo "<th> Datum </th>";
+                    echo "<th> Från </th>";
+                    echo "<th> Till </th>";  
+                    echo "<th> Titel </th>";  
+                    echo "<th> Innehåll </th>";  
+                echo "</tr>";             
+            echo "</thead>";
+
+            // Finds all documents in emails
+            $document = $collection->find([]);
+
+            // For each Document, print out in row
+            foreach ($document as $doc) {
+                echo "<tr>";
+                // For each attribute in document, print out in column
+                foreach ($doc as $atr) {
+                    echo "<td>";
+                        echo json_encode($atr), PHP_EOL;
+                    echo "</td>";
+                }
+                
+                echo "</tr>";
+            }
+        echo "</Table>";
+    ?>
 </body>
 </html>
