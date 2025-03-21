@@ -2,12 +2,12 @@ h1, h2, h3{
     text-align: center;
 }
 
-#sqlPostForm{
+form {
     margin: 0 auto;
     text-align: center;
 }
 
-table {
+table { 
     margin: 0 auto;
     margin-top: 10px;
     width: 75%;
