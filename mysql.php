@@ -65,13 +65,15 @@
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
-                    echo "<th> Namn</th>";
-                    echo "<th> PersonNr </th>";
-                    echo "<th> Född </th>";
-                    echo "<th> Notes </th>";  
+                    echo "<th> ID</th>";
+                    echo "<th> Date </th>";
+                    echo "<th> From </th>";
+                    echo "<th> To </th>";  
+                    echo "<th> Subject </th>";  
+                    echo "<th> Body </th>";  
                 echo "</tr>";             
             echo "</thead>";
-            foreach($pdo->query('select * from test_table', PDO::FETCH_ASSOC) AS $row) {
+            foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
                 echo "<tr>";
                 foreach ($row as $col=>$val) {
                     echo "<td>";

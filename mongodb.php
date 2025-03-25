@@ -74,8 +74,7 @@
                     echo "<td>";
                         echo json_encode($atr), PHP_EOL;
                     echo "</td>";
-                }
-                
+                }                
                 echo "</tr>";
             }
         echo "</Table>";
