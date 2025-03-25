@@ -27,13 +27,16 @@
 
         // Insert function
         // Takes the inputs from the form and connects them to the table attributes
-        if (isset($_POST['sqlName'])) {
-            $querystring = 'INSERT INTO test_table (namn, pnr, bday, notes) VALUES (:NAME, :PNR, :BDAY, :NOTES);';
+        if (isset($_POST['sqlID'])) {
+
+            $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
             $stmt = $pdo->prepare($querystring);
-            $stmt->bindParam(':NAME', $_POST['sqlName']);
-            $stmt->bindParam(':PNR', $_POST['sqlID']);
-            $stmt->bindParam(':BDAY', $_POST['sqlBday']);
-            $stmt->bindParam(':NOTES', $_POST['sqlNotes']);
+            $stmt->bindParam(':ID', $_POST['sqlID']);
+            $stmt->bindParam(':DATE', $_POST['sqlDate']);
+            $stmt->bindParam(':MAIL_FROM', $_POST['sqlFrom']);
+            $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
+            $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
+            $stmt->bindParam(':BODY', $_POST['sqlBody']);
             $stmt->execute();
         }
     ?>
@@ -46,17 +49,23 @@
     </h2>
     <h3>Insert:</h3>
     <form action='mysql.php' method='POST' id="sqlPostForm">
-        <label for="sqlName">Name: </label>
-        <input type="text" name="sqlName" id="sqlName">
-
         <label for="sqlID">ID: </label>
         <input type="text" name="sqlID" id="sqlID">
+
+        <label for="sqlDate">Date: </label>
+        <input type="text" name="sqlDate" id="sqlDate">
         
-        <label for="sqlBday">Birthday: </label>
-        <input type="text" name="sqlBday" id="sqlBday">
+        <label for="sqlFrom">From: </label>
+        <input type="text" name="sqlFrom" id="sqlFrom">
         
-        <label for="sqlNotes">Notes: </label>
-        <input type="text" name="sqlNotes" id="sqlNotes">
+        <label for="sqlTo">To: </label>
+        <input type="text" name="sqlTo" id="sqlTo">
+        
+        <label for="sqlSubject">Subject: </label>
+        <input type="text" name="sqlSubject" id="sqlSubject">
+        
+        <label for="sqlBody">Content: </label>
+        <input type="text" name="sqlBody" id="sqlBody">
 
         <input type="submit" value="Insert">
     </form>
