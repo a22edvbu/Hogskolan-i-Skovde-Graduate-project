@@ -40,18 +40,12 @@
             function encrypt_text($plaintext, $key, $iv, $method) {
                 return base64_encode($iv . openssl_encrypt($plaintext, $method, $key, 0, $iv));
             }
+            
 
             // Sample email data
-            $sender = "alice@example.com";
-            $recipient = "bob@example.com";
-            $subject = "Encrypted Email";
-            $body = "Hello Bob, this is a secret message!";
 
             // Encrypt the email body
             $encrypted_body = encrypt_text($_POST['sqlBody'], $encryptionKey, $iv, $method);
-
-            echo "Body: " . $body . "<br>";
-            echo "Encrypted Body: " . $encrypted_body;
 
             $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
             $stmt = $pdo->prepare($querystring);
@@ -110,6 +104,7 @@
                 echo "<tr>";
                 foreach ($row as $col=>$val) {
                     echo "<td>";
+                    
                     echo $val;
                     echo "</td>";
                 }
