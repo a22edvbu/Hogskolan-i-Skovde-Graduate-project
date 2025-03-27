@@ -14,7 +14,12 @@
         $servername = "localhost";
         $username = "root";
         $password = "";
-
+        
+        // Key used for encrypting and decrypting data
+        $encryptionKey = 'Testing Test';
+        // The encryption method used
+        $method = "AES-256-CBC";
+        
         // DB connect
         try {
             $pdo = new PDO("mysql:host=$servername;dbname=examensdb", $username, $password);
@@ -24,28 +29,53 @@
         } catch(PDOException $e) {
             echo "Connection failed: " . $e->getMessage();
         }
+        function encryptText($plaintext, $key, $iv, $method) {
+            // Random number
+            $iv = openssl_random_pseudo_bytes(16);
+            return base64_encode($iv . openssl_encrypt($plaintext, $method, $key, 0, $iv));
+        }
+        function decryptText($encrypted_text, $key, $method) {
+            $data = base64_decode($encrypted_text);
+            $iv = substr($data, 0, 16);
+            $ciphertext = substr($data, 16);
+            return openssl_decrypt($ciphertext, $method, $key, 0, $iv);
+        }
+
+        function writeToCSV($encryptionKey, $method) {
+            $row = 0;
+            
+            if (($handle = fopen("testEmails.csv", "r")) !== FALSE) {
+                $output = fopen("testEmailsEncrypt.csv", "w"); // New file for encrypted data
+                
+                while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                    $iv = openssl_random_pseudo_bytes(16); // IV generated per row
+                    if ($row === 0) {
+                        // Write out other columns as normal
+                        fputcsv($output, $data);
+                    } else {
+                        // Encrypt the BODY column
+                        if (isset($data[5])) {
+                            $data[5] = encryptText($data[5], $encryptionKey, $iv, $method);
+                        }
+                        fputcsv($output, $data); // Write modified row to file
+                    }
+                    $row++;
+                }
+        
+                fclose($handle);
+                fclose($output);
+                echo "CSV file encrypted! saved to testEmailsEncrypt.csv";
+            } else {
+                echo "Error opening testEmails.csv.";
+            }
+        }
+        
 
         // Insert function
         // Takes the inputs from the form and connects them to the table attributes
-        
         if (isset($_POST['sqlID'])) {
-
-            // Key used for encrypting and decrypting data
-            $encryptionKey = 'Testing Test';
-            // Random number
-            $iv = openssl_random_pseudo_bytes(16);
-            // The encryption method used
-            $method = "AES-256-CBC";
-
-            function encrypt_text($plaintext, $key, $iv, $method) {
-                return base64_encode($iv . openssl_encrypt($plaintext, $method, $key, 0, $iv));
-            }
-            
-
-            // Sample email data
-
             // Encrypt the email body
-            $encrypted_body = encrypt_text($_POST['sqlBody'], $encryptionKey, $iv, $method);
+            $encryptedBody = encryptText($_POST['sqlBody'], $encryptionKey, $iv, $method);
 
             $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
             $stmt = $pdo->prepare($querystring);
@@ -54,14 +84,22 @@
             $stmt->bindParam(':MAIL_FROM', $_POST['sqlFrom']);
             $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
             $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
-            $stmt->bindParam(':BODY', $encrypted_body);
+            $stmt->bindParam(':BODY', $encryptedBody);
             $stmt->execute();
         }
+        // Scans for button to be pressed before running writeToCSV()
+        if (isset($_POST['encryptCSV'])) {
+            writeToCSV($encryptionKey, $method);
+        }
+        
     ?>
     <h1>MySQL</h1>
     <p>
         <div class="homeBtn"><a href="index.php">Home</a></div>
     </p>
+    <form action="mysql.php" method="POST">
+        <input type="submit" name="encryptCSV" value="Encrypt CSV">
+    </form>
     <h2>
         MySQL Database:
     </h2>
@@ -104,8 +142,17 @@
                 echo "<tr>";
                 foreach ($row as $col=>$val) {
                     echo "<td>";
-                    
-                    echo $val;
+                    // Only decrypts the Body column
+                    if ($col == 'Body') {  
+                        $decrypted = decryptText($val, $encryptionKey, $method);
+                        // Print error if decryption fails
+                        echo $decrypted ?: "[ERROR: Not Decrypted]";                    
+                    } else if ($col == 'ID') {
+                        // Highlights ID
+                        echo "<b>" . $val . "</b>";
+                    } else {
+                        echo $val;
+                    }
                     echo "</td>";
                 }
                 echo "</tr>";
