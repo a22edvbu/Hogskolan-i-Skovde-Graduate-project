@@ -16,7 +16,9 @@
         $password = "";
         
         // Key used for encrypting and decrypting data
-        $encryptionKey = 'Testing Test';
+        // $keyFile = fopen("encryptionKey.txt", "r") or die("Unable to open file!");
+        // $encryptionKey = fread($keyFile,filesize("encryptionKey.txt"));
+        // fclose($keyFile);
         // The encryption method used
         $method = "AES-256-CBC";
         
@@ -29,16 +31,23 @@
         } catch(PDOException $e) {
             echo "Connection failed: " . $e->getMessage();
         }
-        function encryptText($plaintext, $key, $iv, $method) {
+        function getPrivateKey() {
+            $keyFile = fopen("encryptionKey.txt", "r") or die("Unable to open file!");
+            $encryptionKey = fread($keyFile,filesize("encryptionKey.txt"));
+            fclose($keyFile);
+            return $encryptionKey;
+        }
+        function encryptText($plaintext, $iv, $method) {
             // Random number
             $iv = openssl_random_pseudo_bytes(16);
-            return base64_encode($iv . openssl_encrypt($plaintext, $method, $key, 0, $iv));
+            return base64_encode($iv . openssl_encrypt($plaintext, $method, getPrivateKey(), 0, $iv));
         }
-        function decryptText($encrypted_text, $key, $method) {
+        function decryptText($encrypted_text, $method) {
+
             $data = base64_decode($encrypted_text);
             $iv = substr($data, 0, 16);
             $ciphertext = substr($data, 16);
-            return openssl_decrypt($ciphertext, $method, $key, 0, $iv);
+            return openssl_decrypt($ciphertext, $method, getPrivateKey(), 0, $iv);
         }
 
         function writeToCSV($encryptionKey, $method) {
@@ -55,7 +64,7 @@
                     } else {
                         // Encrypt the BODY column
                         if (isset($data[5])) {
-                            $data[5] = encryptText($data[5], $encryptionKey, $iv, $method);
+                            $data[5] = encryptText($data[5], $iv, $method);
                         }
                         fputcsv($output, $data); // Write modified row to file
                     }
@@ -75,7 +84,7 @@
         // Takes the inputs from the form and connects them to the table attributes
         if (isset($_POST['sqlID'])) {
             // Encrypt the email body
-            $encryptedBody = encryptText($_POST['sqlBody'], $encryptionKey, $iv, $method);
+            $encryptedBody = encryptText($_POST['sqlBody'], $iv, $method);
 
             $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
             $stmt = $pdo->prepare($querystring);
@@ -144,7 +153,7 @@
                     echo "<td>";
                     // Only decrypts the Body column
                     if ($col == 'Body') {  
-                        $decrypted = decryptText($val, $encryptionKey, $method);
+                        $decrypted = decryptText($val, $method);
                         // Print error if decryption fails
                         echo $decrypted ?: "[ERROR: Not Decrypted]";                    
                     } else if ($col == 'ID') {
