@@ -102,6 +102,9 @@
                     } else if ($field == 'ID') {
                         // Highlights ID
                         echo "<b>" . $atr . "</b>";
+                    } else if ($field == 'Date') {
+                        // Reformats the date in db to readable YEAR-MONTH-DAY
+                        echo $atr->toDateTime()->format('Y-m-d');
                     } else {
                         echo $atr;
                     }
