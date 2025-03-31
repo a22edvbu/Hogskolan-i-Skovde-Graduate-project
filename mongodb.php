@@ -22,6 +22,27 @@
             echo "Connection failed: " . $e->getMessage();
         }
 
+        $method = "AES-256-CBC";
+
+        function getPrivateKey() {
+            $keyFile = fopen("encryptionKey.txt", "r") or die("Unable to open file!");
+            $encryptionKey = fread($keyFile,filesize("encryptionKey.txt"));
+            fclose($keyFile);
+            return $encryptionKey;
+        }
+        function encryptText($plaintext, $iv, $method) {
+            // Random number
+            $iv = openssl_random_pseudo_bytes(16);
+            return base64_encode($iv . openssl_encrypt($plaintext, $method, getPrivateKey(), 0, $iv));
+        }
+        function decryptText($encrypted_text, $method) {
+
+            $data = base64_decode($encrypted_text);
+            $iv = substr($data, 0, 16);
+            $ciphertext = substr($data, 16);
+            return openssl_decrypt($ciphertext, $method, getPrivateKey(), 0, $iv);
+        }
+
         
         
     ?>
@@ -65,14 +86,25 @@
 
             // Finds all documents in emails
             $document = $collection->find([]);
+            //$document = $collection->find(['projection' => ['_id' => 0], ]);
 
             // For each Document, print out in row
             foreach ($document as $doc) {
                 echo "<tr>";
                 // For each attribute in document, print out in column
-                foreach ($doc as $atr) {
+                foreach ($doc as $field => $atr) {
                     echo "<td>";
-                        echo json_encode($atr), PHP_EOL;
+                    if ($field == 'Body') {  
+                        $decrypted = decryptText($atr, $method);
+                        // Print error if decryption fails
+                        echo $decrypted ?: "[ERROR: Not Decrypted]";
+                        //echo $atr;                    
+                    } else if ($field == 'ID') {
+                        // Highlights ID
+                        echo "<b>" . $atr . "</b>";
+                    } else {
+                        echo $atr;
+                    }
                     echo "</td>";
                 }                
                 echo "</tr>";
