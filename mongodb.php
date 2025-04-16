@@ -30,21 +30,17 @@
             fclose($keyFile);
             return $encryptionKey;
         }
-        function encryptText($plaintext, $iv, $method) {
+        function encryptText($plaintext, $method) {
             // Random number
             $iv = openssl_random_pseudo_bytes(16);
             return base64_encode($iv . openssl_encrypt($plaintext, $method, getPrivateKey(), 0, $iv));
         }
         function decryptText($encrypted_text, $method) {
-
             $data = base64_decode($encrypted_text);
             $iv = substr($data, 0, 16);
             $ciphertext = substr($data, 16);
             return openssl_decrypt($ciphertext, $method, getPrivateKey(), 0, $iv);
         }
-
-        
-        
     ?>
     <h1>MongoDB</h1>
     <p>
@@ -74,13 +70,13 @@
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
-                    echo "<th> _ID</th>";
+                    echo "<th> _id</th>";
                     echo "<th> ID</th>";
-                    echo "<th> Datum </th>";
-                    echo "<th> Från </th>";
-                    echo "<th> Till </th>";  
-                    echo "<th> Titel </th>";  
-                    echo "<th> Innehåll </th>";  
+                    echo "<th> Date </th>";
+                    echo "<th> From </th>";
+                    echo "<th> To </th>";  
+                    echo "<th> Subject </th>";  
+                    echo "<th> Body </th>";  
                 echo "</tr>";             
             echo "</thead>";
 
@@ -91,14 +87,13 @@
             // For each Document, print out in row
             foreach ($document as $doc) {
                 echo "<tr>";
-                // For each attribute in document, print out in column
+                // For each field in document, print out in cell
                 foreach ($doc as $field => $atr) {
                     echo "<td>";
                     if ($field == 'Body') {  
                         $decrypted = decryptText($atr, $method);
                         // Print error if decryption fails
-                        echo $decrypted ?: "[ERROR: Not Decrypted]";
-                        //echo $atr;                    
+                        echo $decrypted ?: "[ERROR: Not Decrypted]";                    
                     } else if ($field == 'ID') {
                         // Highlights ID
                         echo "<b>" . $atr . "</b>";
