@@ -11,6 +11,10 @@
 </style>
 <body>
     <?php
+        require 'decryptText.php';
+        require 'encryptText.php';
+        require 'getPrivateKey.php';
+
         $servername = "localhost";
         $username = "root";
         $password = "";
@@ -31,32 +35,13 @@
         } catch(PDOException $e) {
             echo "Connection failed: " . $e->getMessage();
         }
-        function getPrivateKey() {
-            $keyFile = fopen("encryptionKey.txt", "r") or die("Unable to open file!");
-            $encryptionKey = fread($keyFile,filesize("encryptionKey.txt"));
-            fclose($keyFile);
-            return $encryptionKey;
-        }
-        function encryptText($plaintext, $method) {
-            // Random number
-            $iv = openssl_random_pseudo_bytes(16);
-            return base64_encode($iv . openssl_encrypt($plaintext, $method, getPrivateKey(), 0, $iv));
-        }
-        function decryptText($encryptedText, $method) {
-            $data = base64_decode($encryptedText);
-            $iv = substr($data, 0, 16);
-            $ciphertext = substr($data, 16);
-            return openssl_decrypt($ciphertext, $method, getPrivateKey(), 0, $iv);
-        }
-
-        
-        
 
         // Insert function
         // Takes the inputs from the form and connects them to the table attributes
         if (isset($_POST['sqlID'])) {
             // Encrypt the email body
-            $encryptedBody = encryptText($_POST['sqlBody'], $method);
+            $sqlBody = $_POST['sqlBody'];
+            $encryptedBody = encryptText($sqlBody, $method);
 
             $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
             $stmt = $pdo->prepare($querystring);

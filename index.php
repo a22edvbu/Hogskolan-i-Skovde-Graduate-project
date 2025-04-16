@@ -7,6 +7,9 @@
 </head>
 <body>
     <?php
+    require 'decryptText.php';
+    require 'encryptText.php';
+    require 'getPrivateKey.php';
     function writeToCSV($method) {
         $row = 0;
         
