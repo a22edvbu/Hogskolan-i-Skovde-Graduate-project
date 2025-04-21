@@ -13,6 +13,9 @@
         require 'decryptText.php';
         require 'encryptText.php';
         require 'getPrivateKey.php';
+        require 'logTime.php';
+
+
 
         // Connects to MongoDB through XAMPP server with feedback
         try {
@@ -87,18 +90,34 @@
             $document = $collection->find([]);
             //$document = $collection->find(['projection' => ['_id' => 0], ]);
 
+            // Clears file for each test
+            clearFile("mdbDecrypt");
+
             // For each Document, print out in row
             foreach ($document as $doc) {
                 echo "<tr>";
+                // Save ID for current row
+                $id = "";
                 // For each field in document, print out in cell
                 foreach ($doc as $field => $atr) {
                     echo "<td>";
                     if ($field == 'Body') {  
+                        // Starts timer for measure
+                        $startMeasure = microtime(true);
+
                         $decrypted = decryptText($atr, $method);
+                        
+                        // Stops timer for measure
+                        $stopMeasure = microtime(true);  
+
+                        // Subtract startMeasure form StopMeasure to get difference
+                        $measuredTime = ($stopMeasure - $startMeasure);                  
+                        
                         // Print error if decryption fails
-                        echo $decrypted ?: "[ERROR: Not Decrypted]";                    
+                        echo $decrypted ?: "[ERROR: Not Decrypted]";    
                     } else if ($field == 'ID') {
                         // Highlights ID
+                        $id = $atr;
                         echo "<b>" . $atr . "</b>";
                     } else if ($field == 'Date') {
                         // Reformats the date in db to readable YEAR-MONTH-DAY
@@ -107,10 +126,12 @@
                         echo $atr;
                     }
                     echo "</td>";
-                }                
+                }
+                // Sends ID and measured Time to be inserted into CSV data
+                logTime("decryption",$id, $measuredTime);
                 echo "</tr>";
             }
-        echo "</Table>";
+            echo "</Table>";
     ?>
 </body>
 </html>

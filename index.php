@@ -17,7 +17,7 @@
             $output = fopen("testEmailsEncrypt.csv", "w"); // New file for encrypted data
             
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $iv = openssl_random_pseudo_bytes(16); // Useless because IV is generated in encryptText() anyway
+                $iv = openssl_random_pseudo_bytes(16); 
                 if ($row === 0) {
                     // Write out other columns as normal
                     fputcsv($output, $data);
