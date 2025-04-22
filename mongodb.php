@@ -128,7 +128,7 @@
                     echo "</td>";
                 }
                 // Sends ID and measured Time to be inserted into CSV data
-                logTime("decryption",$id, $measuredTime);
+                logTime("mdbDecrypt",$id, $measuredTime);
                 echo "</tr>";
             }
             echo "</Table>";

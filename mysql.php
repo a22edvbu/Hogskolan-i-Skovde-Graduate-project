@@ -14,6 +14,7 @@
         require 'decryptText.php';
         require 'encryptText.php';
         require 'getPrivateKey.php';
+        require 'logTime.php';
 
         $servername = "localhost";
         $username = "root";
@@ -52,9 +53,7 @@
             $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
             $stmt->bindParam(':BODY', $encryptedBody);
             $stmt->execute();
-        }
-        
-        
+        } 
     ?>
     <h1>MySQL</h1>
     <p>
@@ -99,23 +98,38 @@
                 echo "</tr>";             
             echo "</thead>";
             echo "<tbody>";
+            
+            clearFile("sqlDecrypt");
+
             foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
                 echo "<tr>";
                 foreach ($row as $col=>$val) {
                     echo "<td>";
                     // Only decrypts the Body column
                     if ($col == 'Body') {  
+                        // Starts timer for measure
+                        $startMeasure = microtime(true);
+                        
                         $decrypted = decryptText($val, $method);
                         // Print error if decryption fails
+                        
+                        // Stops timer for measure
+                        $stopMeasure = microtime(true);  
+
+                        // Subtract startMeasure form StopMeasure to get difference
+                        $measuredTime = ($stopMeasure - $startMeasure);    
                         echo $decrypted ?: "[ERROR: Not Decrypted]";                    
                     } else if ($col == 'ID') {
                         // Highlights ID
+                        $id = $val;
                         echo "<b>" . $val . "</b>";
                     } else {
                         echo $val;
                     }
                     echo "</td>";
                 }
+                // Sends ID and measured Time to be inserted into CSV data
+                logTime("sqlDecrypt",$id, $measuredTime);
                 echo "</tr>";
             } 
             echo "</tbody>";
