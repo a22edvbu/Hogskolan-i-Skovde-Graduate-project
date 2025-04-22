@@ -26,6 +26,7 @@
         // fclose($keyFile);
         // The encryption method used
         $method = "AES-256-CBC";
+        $fetchedResults = [];
         
         // DB connect
         try {
@@ -37,23 +38,65 @@
             echo "Connection failed: " . $e->getMessage();
         }
 
-        // Insert function
-        // Takes the inputs from the form and connects them to the table attributes
+        // Recieves the POST from form and identify type of operation
         if (isset($_POST['sqlID'])) {
-            // Encrypt the email body
-            $sqlBody = $_POST['sqlBody'];
-            $encryptedBody = encryptText($sqlBody, $method);
+            $sqlOperation = $_POST['sqlOperation'];
+            
+            // Insert function
+            if($sqlOperation == 'insert') {
+                echo "Insert selected";
+                // Encrypt the email body
+                $sqlBody = $_POST['sqlBody'];
+                $encryptedBody = encryptText($sqlBody, $method);
 
-            $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
+                $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY);';
+                $stmt = $pdo->prepare($querystring);
+                $stmt->bindParam(':ID', $_POST['sqlID']);
+                $stmt->bindParam(':DATE', $_POST['sqlDate']);
+                $stmt->bindParam(':MAIL_FROM', $_POST['sqlFrom']);
+                $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
+                $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
+                $stmt->bindParam(':BODY', $encryptedBody);
+                $stmt->execute();
+                $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Select function
+            } else if ($sqlOperation == 'select'){
+                echo "Select selected";
+                $querystring = 'SELECT * FROM emails 
+                WHERE ID = :ID 
+                  AND Date = :DATE 
+                  AND Mail_From = :MAIL_FROM 
+                  AND Mail_To = :MAIL_TO 
+                  AND Subject = :SUBJECT 
+                  AND Body = :BODY';
+                $stmt = $pdo->prepare($querystring);
+                $stmt->bindParam(':ID', $_POST['sqlID']);
+                $stmt->bindParam(':DATE', $_POST['sqlDate']);
+                $stmt->bindParam(':MAIL_FROM', $_POST['sqlFrom']);
+                $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
+                $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
+                $stmt->bindParam(':BODY', $_POST['sqlBody']);
+                $stmt->execute();
+                $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            } else if ($sqlOperation == 'delete') {
+                echo "Delete selected";
+
+            // Default function
+            } else {
+                echo "Default selected";
+                $querystring = 'SELECT * FROM emails';
+                $stmt = $pdo->prepare($querystring);
+                $stmt->execute();
+                $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);        
+            }
+        } else {
+            echo "Default selected";
+            $querystring = 'SELECT * FROM emails';
             $stmt = $pdo->prepare($querystring);
-            $stmt->bindParam(':ID', $_POST['sqlID']);
-            $stmt->bindParam(':DATE', $_POST['sqlDate']);
-            $stmt->bindParam(':MAIL_FROM', $_POST['sqlFrom']);
-            $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
-            $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
-            $stmt->bindParam(':BODY', $encryptedBody);
             $stmt->execute();
-        } 
+            $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);     
+        }
     ?>
     <h1>MySQL</h1>
     <p>
@@ -62,8 +105,18 @@
     <h2>
         MySQL Database:
     </h2>
-    <h3>Insert:</h3>
-    <form action='mysql.php' method='POST' id="sqlPostForm">
+    <h3>Operation:</h3>
+    <form action='mysql.php' method='POST' id="sqlSearch">
+        <input type="radio" name="sqlOperation" id="sqlInsert" value="insert">
+        <label for="sqlInsert">INSERT</label>
+        <input type="radio" name="sqlOperation" id="sqlSelect" value="select">
+        <label for="sqlSelect">SELECT</label>
+        <input type="radio" name="sqlOperation" id="sqlDelete" value="delete">
+        <label for="sqlDelete">DELETE</label>
+        <input type="radio" name="sqlOperation" id="sqlDefault" value="default">
+        <label for="sqlDefault">Show All</label><br>
+
+
         <label for="sqlID">ID: </label>
         <input type="text" name="sqlID" id="sqlID">
 
@@ -79,10 +132,10 @@
         <label for="sqlSubject">Subject: </label>
         <input type="text" name="sqlSubject" id="sqlSubject">
         
-        <label for="sqlBody">Content: </label>
+        <label for="sqlBody">Body (only for INSERT!): </label>
         <input type="text" name="sqlBody" id="sqlBody">
-
-        <input type="submit" value="Insert">
+        
+        <input type="submit" value="GO">
     </form>
     <?php
     // prints out the contents of a table
@@ -101,7 +154,9 @@
             
             clearFile("sqlDecrypt");
 
-            foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
+            // foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
+            if (!empty($fetchedResults)) {
+            foreach($fetchedResults as $row) {
                 echo "<tr>";
                 foreach ($row as $col=>$val) {
                     echo "<td>";
@@ -131,6 +186,7 @@
                 // Sends ID and measured Time to be inserted into CSV data
                 logTime("sqlDecrypt",$id, $measuredTime);
                 echo "</tr>";
+            }
             } 
             echo "</tbody>";
         echo "</Table>";

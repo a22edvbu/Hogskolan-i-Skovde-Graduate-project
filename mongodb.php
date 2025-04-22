@@ -29,24 +29,6 @@
         }
 
         $method = "AES-256-CBC";
-
-        // function getPrivateKey() {
-        //     $keyFile = fopen("encryptionKey.txt", "r") or die("Unable to open file!");
-        //     $encryptionKey = fread($keyFile,filesize("encryptionKey.txt"));
-        //     fclose($keyFile);
-        //     return $encryptionKey;
-        // }
-        // function encryptText($plaintext, $method) {
-        //     // Random number
-        //     $iv = openssl_random_pseudo_bytes(16);
-        //     return base64_encode($iv . openssl_encrypt($plaintext, $method, getPrivateKey(), 0, $iv));
-        // }
-        // function decryptText($encrypted_text, $method) {
-        //     $data = base64_decode($encrypted_text);
-        //     $iv = substr($data, 0, 16);
-        //     $ciphertext = substr($data, 16);
-        //     return openssl_decrypt($ciphertext, $method, getPrivateKey(), 0, $iv);
-        // }
     ?>
     <h1>MongoDB</h1>
     <p>
