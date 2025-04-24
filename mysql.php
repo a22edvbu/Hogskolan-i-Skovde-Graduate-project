@@ -42,8 +42,9 @@
         if (isset($_POST['sqlID'])) {
             $sqlOperation = $_POST['sqlOperation'];
             
-            // Insert function
             if($sqlOperation == 'insert') {
+                
+                // Insert function
                 echo "Insert selected";
                 // Encrypt the email body
                 $sqlBody = $_POST['sqlBody'];
@@ -60,8 +61,9 @@
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            // Select function
             } else if ($sqlOperation == 'select'){
+                
+                // Select function
                 echo "Select selected";
                 $querystring = 'SELECT * FROM emails 
                 WHERE ID = :ID 
@@ -90,13 +92,15 @@
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);        
             }
-        } else {
-            echo "Default selected";
-            $querystring = 'SELECT * FROM emails';
-            $stmt = $pdo->prepare($querystring);
-            $stmt->execute();
-            $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);     
         }
+        $_POST = [];
+        // else {
+        //     echo "Default selected";
+        //     $querystring = 'SELECT * FROM emails';
+        //     $stmt = $pdo->prepare($querystring);
+        //     $stmt->execute();
+        //     $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);     
+        // }
     ?>
     <h1>MySQL</h1>
     <p>
@@ -107,13 +111,13 @@
     </h2>
     <h3>Operation:</h3>
     <form action='mysql.php' method='POST' id="sqlSearch">
-        <input type="radio" name="sqlOperation" id="sqlInsert" value="insert">
+        <input type="radio" name="sqlOperation" id="sqlInsert" class="insertRadio" value="insert">
         <label for="sqlInsert">INSERT</label>
-        <input type="radio" name="sqlOperation" id="sqlSelect" value="select">
+        <input type="radio" name="sqlOperation" id="sqlSelect" class="selectRadio" value="select">
         <label for="sqlSelect">SELECT</label>
-        <input type="radio" name="sqlOperation" id="sqlDelete" value="delete">
+        <input type="radio" name="sqlOperation" id="sqlDelete" class="deleteRadio" value="delete">
         <label for="sqlDelete">DELETE</label>
-        <input type="radio" name="sqlOperation" id="sqlDefault" value="default">
+        <input type="radio" name="sqlOperation" id="sqlDefault" class="defaultRadio" value="default">
         <label for="sqlDefault">Show All</label><br>
 
 
@@ -135,7 +139,7 @@
         <label for="sqlBody">Body (only for INSERT!): </label>
         <input type="text" name="sqlBody" id="sqlBody">
         
-        <input type="submit" value="GO">
+        <input type="submit" class="submitBtn" value="GO">
     </form>
     <?php
     // prints out the contents of a table
@@ -156,37 +160,37 @@
 
             // foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
             if (!empty($fetchedResults)) {
-            foreach($fetchedResults as $row) {
-                echo "<tr>";
-                foreach ($row as $col=>$val) {
-                    echo "<td>";
-                    // Only decrypts the Body column
-                    if ($col == 'Body') {  
-                        // Starts timer for measure
-                        $startMeasure = microtime(true);
-                        
-                        $decrypted = decryptText($val, $method);
-                        // Print error if decryption fails
-                        
-                        // Stops timer for measure
-                        $stopMeasure = microtime(true);  
-
-                        // Subtract startMeasure form StopMeasure to get difference
-                        $measuredTime = ($stopMeasure - $startMeasure);    
-                        echo $decrypted ?: "[ERROR: Not Decrypted]";                    
-                    } else if ($col == 'ID') {
-                        // Highlights ID
-                        $id = $val;
-                        echo "<b>" . $val . "</b>";
-                    } else {
-                        echo $val;
+                foreach($fetchedResults as $row) {
+                    echo "<tr>";
+                    foreach ($row as $col=>$val) {
+                        echo "<td>";
+                        // Only decrypts the Body column
+                        if ($col == 'Body') {  
+                            // Starts timer for measure
+                            $startMeasure = microtime(true);
+                            
+                            $decrypted = decryptText($val, $method);
+                            
+                            // Stops timer for measure
+                            $stopMeasure = microtime(true);  
+                            
+                            // Subtract startMeasure form StopMeasure to get difference
+                            $measuredTime = ($stopMeasure - $startMeasure);    
+                            // Print error if decryption fails
+                            echo $decrypted ?: "[ERROR: Not Decrypted]";                    
+                        } else if ($col == 'ID') {
+                            // Highlights ID
+                            $id = $val;
+                            echo "<b>" . $val . "</b>";
+                        } else {
+                            echo $val;
+                        }
+                        echo "</td>";
                     }
-                    echo "</td>";
+                    // Sends ID and measured Time to be inserted into CSV data
+                    logTime("sqlDecrypt",$id, $measuredTime);
+                    echo "</tr>";
                 }
-                // Sends ID and measured Time to be inserted into CSV data
-                logTime("sqlDecrypt",$id, $measuredTime);
-                echo "</tr>";
-            }
             } 
             echo "</tbody>";
         echo "</Table>";

@@ -20,7 +20,7 @@
         // Connects to MongoDB through XAMPP server with feedback
         try {
             $client = new MongoDB\Client("mongodb://localhost:27017");
-            echo "Connected to MongoDB successfully!";
+            echo "Connected to MongoDB successfully! <br>";
 
             // Fetches email from emails collection in examensDB
             $collection = $client->examensDB->emails;
@@ -29,6 +29,58 @@
         }
 
         $method = "AES-256-CBC";
+        $fetchedResults = [];
+
+        if (isset($_POST['mdbID'])) {
+            $mdbOperation = $_POST['mdbOperation'];
+        
+            if ($mdbOperation == 'insert') {
+                echo "Insert selected";
+        
+                // Encrypt the email body
+                $mdbBody = $_POST['mdbBody'];
+                $encryptedBody = encryptText($mdbBody, $method);
+        
+                $doc = [
+                    'ID' => $_POST['mdbID'],
+                    'Date' => $_POST['mdbDate'],
+                    'Mail_From' => $_POST['mdbFrom'],
+                    'Mail_To' => $_POST['mdbTo'],
+                    'Subject' => $_POST['mdbSubject'],
+                    'Body' => $encryptedBody
+                ];
+        
+                $collection->insertOne($doc);
+                echo "Document inserted.";
+        
+            } elseif ($mdbOperation == 'select') {
+                echo "Select selected";
+        
+                $filter = [
+                    'ID' => $_POST['mdbID'],
+                    'Date' => $_POST['mdbDate'],
+                    'Mail_From' => $_POST['mdbFrom'],
+                    'Mail_To' => $_POST['mdbTo'],
+                    'Subject' => $_POST['mdbSubject'],
+                ];
+        
+                // Remove empty fields from filter
+                $filter = array_filter($filter);
+        
+                $fetchedResults = $collection->find($filter);
+        
+            } elseif ($mdbOperation == 'delete') {
+                echo "Delete selected";
+            } else {
+                echo "Default selected";
+                $fetchedResults = $collection->find();
+            }
+        } 
+        // else {
+        //     echo "Default selected";
+        //     $fetchedResults = $collection->find();
+        // }
+        
     ?>
     <h1>MongoDB</h1>
     <p>
@@ -37,21 +89,37 @@
     <h2>
         MongoDB Database:
     </h2>
-    <h3>Insert:</h3>
-    <form action='mongodb.php' method='POST' id="mongoPostForm">
-        <label for="mongoName">Name: </label>
-        <input type="text" name="mongoName" id="mongoName">
+    <h3>Operations:</h3>
+    <form action='mongodb.php' method='POST' id="mdbSearch">
+        <input type="radio" name="mdbOperation" id="mdbInsert" class="insertRadio" value="insert">
+        <label for="mdbInsert">INSERT</label>
+        <input type="radio" name="mdbOperation" id="mdbSelect" class="selectRadio" value="select">
+        <label for="mdbSelect">SELECT</label>
+        <input type="radio" name="mdbOperation" id="mdbDelete" class="deleteRadio" value="delete">
+        <label for="mdbDelete">DELETE</label>
+        <input type="radio" name="mdbOperation" id="mdbDefault" class="defaultRadio" value="default">
+        <label for="mdbDefault">Show All</label><br>
 
-        <label for="mongoID">ID: </label>
-        <input type="text" name="mongoID" id="mongoID">
-        
-        <label for="mongoBday">Birthday: </label>
-        <input type="text" name="mongoBday" id="mongoBday">
-        
-        <label for="mongoNotes">Notes: </label>
-        <input type="text" name="mongoNotes" id="mongoNotes">
 
-        <input type="submit" value="Insert">
+        <label for=mdblID">ID: </label>
+        <input type="text" name="mdbID" id="mdbID">
+
+        <label for="mdbDate">Date: </label>
+        <input type="text" name="mdbDate" id="mdbDate">
+        
+        <label for="mdbFrom">From: </label>
+        <input type="text" name="mdbFrom" id="mdbFrom">
+        
+        <label for="mdbTo">To: </label>
+        <input type="text" name="mdbTo" id="mdbTo">
+        
+        <label for="mdbSubject">Subject: </label>
+        <input type="text" name="mdbSubject" id="mdbSubject">
+        
+        <label for="mdbBody">Body (only for INSERT!): </label>
+        <input type="text" name="mdbBody" id="mdbBody">
+        
+        <input type="submit" class="submitBtn" value="GO">
     </form>
     <?php
     // prints out the contents of a table
@@ -68,15 +136,11 @@
                 echo "</tr>";             
             echo "</thead>";
 
-            // Finds all documents in emails
-            $document = $collection->find([]);
-            //$document = $collection->find(['projection' => ['_id' => 0], ]);
-
             // Clears file for each test
             clearFile("mdbDecrypt");
 
             // For each Document, print out in row
-            foreach ($document as $doc) {
+            foreach ($fetchedResults as $doc) {
                 echo "<tr>";
                 // Save ID for current row
                 $id = "";

@@ -49,7 +49,11 @@
     <div class="mongoDB"><a href="mongodb.php">MongoDB</a></div>
     <div class="MySQL"><a href="mysql.php">MySQL</a></div>
     <p>
-        <form action="mysql.php" method="POST">
+    
+    <label for="measureToggle">Mätläge </label>
+    <input name="measureToggle" id="measureToggle" type="checkbox">
+    
+        <form action="index.php" method="POST">
             <input type="submit" name="encryptCSV" value="Encrypt CSV">
         </form>
     </p>
