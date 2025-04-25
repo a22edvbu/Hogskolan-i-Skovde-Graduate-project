@@ -26,7 +26,7 @@
         // fclose($keyFile);
         // The encryption method used
         $method = "AES-256-CBC";
-        $fetchedResults = [];
+        
         
         // DB connect
         try {
@@ -156,39 +156,52 @@
             echo "</thead>";
             echo "<tbody>";
             
-            clearFile("sqlDecrypt");
+            clearFile("sql");
 
             // foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
             if (!empty($fetchedResults)) {
                 foreach($fetchedResults as $row) {
                     echo "<tr>";
+                    $startmeasure1 = microtime(true);   
+                    
                     foreach ($row as $col=>$val) {
                         echo "<td>";
                         // Only decrypts the Body column
                         if ($col == 'Body') {  
                             // Starts timer for measure
-                            $startMeasure = microtime(true);
+                            $startmeasure2 = microtime(true);
                             
                             $decrypted = decryptText($val, $method);
                             
                             // Stops timer for measure
-                            $stopMeasure = microtime(true);  
+                            $stopmeasure2 = microtime(true);  
                             
                             // Subtract startMeasure form StopMeasure to get difference
-                            $measuredTime = ($stopMeasure - $startMeasure);    
+                            $measuredTime2 = ($stopmeasure2 - $startmeasure2);
+
+                            $decryptArr[] = $measuredTime2;
                             // Print error if decryption fails
                             echo $decrypted ?: "[ERROR: Not Decrypted]";                    
                         } else if ($col == 'ID') {
                             // Highlights ID
                             $id = $val;
                             echo "<b>" . $val . "</b>";
+                            $idArr[] = $id;
                         } else {
                             echo $val;
                         }
                         echo "</td>";
                     }
+                    $stopmeasure1 = microtime(true);
+                    $measuredTime1 = ($stopmeasure1 - $startmeasure1); 
+                    
+                    $measureArr[] = [
+                        'id' => $id,
+                        'decrypt' => $measuredTime2,
+                        'row' => $measuredTime1
+                    ];
                     // Sends ID and measured Time to be inserted into CSV data
-                    logTime("sqlDecrypt",$id, $measuredTime);
+                    logTime("sql",$measureArr);
                     echo "</tr>";
                 }
             } 

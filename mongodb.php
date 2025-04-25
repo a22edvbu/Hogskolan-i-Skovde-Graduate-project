@@ -137,19 +137,22 @@
             echo "</thead>";
 
             // Clears file for each test
-            clearFile("mdbDecrypt");
+            clearFile("mdb");
 
             // For each Document, print out in row
             foreach ($fetchedResults as $doc) {
                 echo "<tr>";
+                $startmeasure1 = microtime(true);   
+
                 // Save ID for current row
-                $id = "";
+                //$id = "";
+
                 // For each field in document, print out in cell
                 foreach ($doc as $field => $atr) {
                     echo "<td>";
                     if ($field == 'Body') {  
                         // Starts timer for measure
-                        $startMeasure = microtime(true);
+                        $startmeasure2 = microtime(true);
 
                         $decrypted = decryptText($atr, $method);
                         
@@ -157,7 +160,8 @@
                         $stopMeasure = microtime(true);  
 
                         // Subtract startMeasure form StopMeasure to get difference
-                        $measuredTime = ($stopMeasure - $startMeasure);                  
+                        $stopmeasure2 = microtime(true);  
+                        $measuredTime2 = ($stopmeasure2 - $startmeasure2);
                         
                         // Print error if decryption fails
                         echo $decrypted ?: "[ERROR: Not Decrypted]";    
@@ -173,9 +177,16 @@
                     }
                     echo "</td>";
                 }
+                    $stopmeasure1 = microtime(true);
+                    $measuredTime1 = ($stopmeasure1 - $startmeasure1); 
+                    
+                    $measureArr[] = [
+                        'id' => $id,
+                        'decrypt' => $measuredTime2,
+                        'row' => $measuredTime1
+                    ];
                 // Sends ID and measured Time to be inserted into CSV data
-                logTime("mdbDecrypt",$id, $measuredTime);
-                echo "</tr>";
+                logTime("mdb",$measureArr);                echo "</tr>";
             }
             echo "</Table>";
     ?>
