@@ -2,17 +2,37 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-df1 = pd.read_csv('sqlDecryptData.csv', header=None)
-df2 = pd.read_csv('mdbDecryptData.csv', header=None)
+sqlDataset = pd.read_csv('sqlData.csv')
+mdbDataset = pd.read_csv('mdbData.csv')  
 
-print(df1[1].to_string())  
-print(df2[1].to_string())  
+df1 = pd.DataFrame()
+df2 = pd.DataFrame()
+df1 = sqlDataset
+df2 = mdbDataset
 
-plt.plot(df1[1], label='MySQL')
-plt.plot(df2[1], label='MongoDB')
+def standardMean():
+    print (df1['Rows'].mean())
+    print (df2['Rows'].std())
 
-plt.title('Time to decrypt')
-plt.xlabel("Amount measured")
-plt.ylabel("Milliseconds processed")
-plt.legend()
-plt.show()
+def lineDiagram1(): 
+    plt.plot(df1['Rows'], label='MySQL')
+    plt.plot(df2['Rows'], label='MongoDb')
+
+    plt.title('Time to decrypt')
+    plt.xlabel('Amount measured')
+    plt.ylabel('Milliseconds processed')
+    plt.legend()
+    plt.show()
+    
+def lineDiagram2(): 
+    plt.plot(df1['Decryption'], label='MySQL')
+    plt.plot(df2['Decryption'], label='MongoDb')
+
+    plt.title('Time to fetch rows')
+    plt.xlabel('Amount measured')
+    plt.ylabel('Milliseconds processed')
+    plt.legend()
+    plt.show()
+
+lineDiagram1()
+lineDiagram2()
