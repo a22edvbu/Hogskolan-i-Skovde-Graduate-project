@@ -10,11 +10,14 @@
     require 'decryptText.php';
     require 'encryptText.php';
     require 'getPrivateKey.php';
+
+    $method = "AES-256-CBC";
+
     function writeToCSV($method) {
         $row = 0;
         
         if (($handle = fopen("testEmails.csv", "r")) !== FALSE) {
-            $output = fopen("testEmailsEncrypt.csv", "w"); // New file for encrypted data
+            $output = fopen("EmailsEncrypted.csv", "w"); // New file for encrypted data
             
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $iv = openssl_random_pseudo_bytes(16); 
@@ -33,7 +36,7 @@
         
             fclose($handle);
             fclose($output);
-            echo "CSV file encrypted! saved to testEmailsEncrypt.csv";
+            echo "CSV file encrypted! saved to EmailsEncrypted.csv";
         } else {
             echo "Error opening testEmails.csv.";
         }

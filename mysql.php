@@ -27,6 +27,13 @@
         // The encryption method used
         $method = "AES-256-CBC";
         
+        // declares the measurment variables before logging.
+        $id = null;
+        $measuredTime1 = null;
+        $measuredTime2 = null;
+        $measuredTime3 = null;
+        $measureArr = [];
+
         
         // DB connect
         try {
@@ -58,6 +65,7 @@
                 $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
                 $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
                 $stmt->bindParam(':BODY', $encryptedBody);
+                $startmeasure3 = microtime(true);
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -79,6 +87,7 @@
                 $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
                 $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
                 $stmt->bindParam(':BODY', $_POST['sqlBody']);
+                $startmeasure3 = microtime(true);
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
             } else if ($sqlOperation == 'delete') {
@@ -89,9 +98,12 @@
                 echo "Default selected";
                 $querystring = 'SELECT * FROM emails';
                 $stmt = $pdo->prepare($querystring);
+                $startmeasure3 = microtime(true);
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);        
             }
+            $stopmeasure3 = microtime(true);
+            $measuredTime3 = $stopmeasure3 - $startmeasure3;
         }
         $_POST = [];
         // else {
@@ -156,7 +168,7 @@
             echo "</thead>";
             echo "<tbody>";
             
-            clearFile("sql");
+            //clearFile("sql");
 
             // foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
             if (!empty($fetchedResults)) {
@@ -179,7 +191,7 @@
                             // Subtract startMeasure form StopMeasure to get difference
                             $measuredTime2 = ($stopmeasure2 - $startmeasure2);
 
-                            $decryptArr[] = $measuredTime2;
+                            $measuredTime2 += $measuredTime3;
                             // Print error if decryption fails
                             echo $decrypted ?: "[ERROR: Not Decrypted]";                    
                         } else if ($col == 'ID') {
@@ -193,20 +205,27 @@
                         echo "</td>";
                     }
                     $stopmeasure1 = microtime(true);
+                    
+                    // Subtract startMeasure form StopMeasure to get difference
                     $measuredTime1 = ($stopmeasure1 - $startmeasure1); 
                     
                     $measureArr[] = [
                         'id' => $id,
                         'decrypt' => $measuredTime2,
-                        'row' => $measuredTime1
+                        'row' => $measuredTime1,
+                        'table' => $measuredTime3
                     ];
-                    // Sends ID and measured Time to be inserted into CSV data
-                    logTime("sql",$measureArr);
                     echo "</tr>";
                 }
             } 
             echo "</tbody>";
-        echo "</Table>";
-    ?>
+            echo "</Table>";
+            
+            // Only logs time when there is something new to add.
+            // Sends ID and measured Time to be inserted into CSV data
+            if (!empty($measureArr)) {
+                logTime("sqlTest", $measureArr);
+            }    
+?>
 </body>
 </html>

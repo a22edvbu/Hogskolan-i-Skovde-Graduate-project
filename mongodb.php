@@ -29,6 +29,13 @@
         }
 
         $method = "AES-256-CBC";
+        // declares the measurment variables before logging.
+        $id = null;
+        $measuredTime1 = null;
+        $measuredTime2 = null;
+        $measuredTime3 = null;
+        $measureArr = [];
+
         $fetchedResults = [];
 
         if (isset($_POST['mdbID'])) {
@@ -49,7 +56,7 @@
                     'Subject' => $_POST['mdbSubject'],
                     'Body' => $encryptedBody
                 ];
-        
+                $startmeasure3 = microtime(true);
                 $collection->insertOne($doc);
                 echo "Document inserted.";
         
@@ -66,15 +73,20 @@
         
                 // Remove empty fields from filter
                 $filter = array_filter($filter);
-        
+                $startmeasure3 = microtime(true);
+
                 $fetchedResults = $collection->find($filter);
         
             } elseif ($mdbOperation == 'delete') {
                 echo "Delete selected";
             } else {
                 echo "Default selected";
+                $startmeasure3 = microtime(true);
+
                 $fetchedResults = $collection->find();
             }
+            $stopmeasure3 = microtime(true);
+            $measuredTime3 = $stopmeasure3 - $startmeasure3;
         } 
         // else {
         //     echo "Default selected";
@@ -137,7 +149,7 @@
             echo "</thead>";
 
             // Clears file for each test
-            clearFile("mdb");
+            //clearFile("mdb");
 
             // For each Document, print out in row
             foreach ($fetchedResults as $doc) {
@@ -162,6 +174,8 @@
                         // Subtract startMeasure form StopMeasure to get difference
                         $stopmeasure2 = microtime(true);  
                         $measuredTime2 = ($stopmeasure2 - $startmeasure2);
+
+                        $measuredTime2 += $measuredTime3;
                         
                         // Print error if decryption fails
                         echo $decrypted ?: "[ERROR: Not Decrypted]";    
@@ -177,18 +191,26 @@
                     }
                     echo "</td>";
                 }
-                    $stopmeasure1 = microtime(true);
-                    $measuredTime1 = ($stopmeasure1 - $startmeasure1); 
-                    
-                    $measureArr[] = [
-                        'id' => $id,
-                        'decrypt' => $measuredTime2,
-                        'row' => $measuredTime1
-                    ];
-                // Sends ID and measured Time to be inserted into CSV data
-                logTime("mdb",$measureArr);                echo "</tr>";
+                // Subtract startMeasure form StopMeasure to get difference
+                $stopmeasure1 = microtime(true);
+                $measuredTime1 = ($stopmeasure1 - $startmeasure1); 
+                
+                $measureArr[] = [
+                    'id' => $id,
+                    'decrypt' => $measuredTime2,
+                    'row' => $measuredTime1,
+                    'table' => $measuredTime3
+                ];
+                               
+                echo "</tr>";
             }
+            echo "</tbody>";
             echo "</Table>";
+            // Only logs time when there is something new to add.
+            // Sends ID and measured Time to be inserted into CSV data
+            if (!empty($measureArr)) {
+                logTime("mdbTests", $measureArr);
+            }    
     ?>
 </body>
 </html>
