@@ -2,17 +2,25 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-sqlDataset = pd.read_csv('sqlData.csv', header=None)
-mdbDataset = pd.read_csv('mdbData.csv', header=None)
+sqlDataset = pd.read_csv('sqlData1.csv', header=None)
+mdbDataset = pd.read_csv('mdbData1.csv', header=None)
+sqlBrowserDataset = pd.read_csv('sqlBrowserDataTest.csv', header=None)
+mdbBrowserDataset = pd.read_csv('mdbBrowserDataTest.csv', header=None)
 
-sqlDataset.columns = ['ID', 'Decryption', 'Rows', 'Table']
-mdbDataset.columns = ['ID', 'Decryption', 'Rows', 'Table']
+sqlDataset.columns = ['ID', 'Decryption', 'Rows', "Table"]
+mdbDataset.columns = ['ID', 'Decryption', 'Rows', "Table"]
+sqlBrowserDataset.columns = ['Start', 'Stop', 'Diff']
+mdbBrowserDataset.columns = ['Start', 'Stop', 'Diff']
 
 df1 = pd.DataFrame();
 df2 = pd.DataFrame();
+df3 = pd.DataFrame();
+df4 = pd.DataFrame();
 
 df1 = sqlDataset
 df2 = mdbDataset
+df3 = sqlBrowserDataset
+df4 = mdbBrowserDataset
 
 #df1 = df1.sort_values(by='ID')
 #df2 = df2.sort_values(by='ID')
@@ -24,10 +32,10 @@ def standardMean():
     print(df1['Rows'].mean())
     print(df2['Rows'].std())
 
-def lineDiagram1():
+def lineDiagram1():                                     # Decryption
     plt.figure(figsize=(12,5))
-    plt.plot(df1['Decryption'], label='MySQL')
-    plt.plot(df2['Decryption'], label='MongoDb')
+    plt.plot(df1['Decryption'] * 1000, label='MySQL')
+    plt.plot(df2['Decryption'] * 1000, label='MongoDb')
     
     plt.title('Dekrypteringstid')
     plt.xlabel('Antal mätpunkter')
@@ -36,19 +44,20 @@ def lineDiagram1():
     plt.tight_layout()
     plt.show()
 
-def lineDiagram2():
+def lineDiagram2():                                     # Browser load time
     plt.figure(figsize=(12,5))
-    plt.plot(df1['Rows'], label='MySQL')
-    plt.plot(df2['Rows'], label='MongoDb')
     
-    plt.title('Radutskrift')
+    plt.plot(df3['Diff'], label='MySQL')
+    plt.plot(df4['Diff'], label='MongoDB')
+    
+    plt.title('Hämtningstider Browser (Firefox)')
     plt.xlabel('Amount measured')
     plt.ylabel('Responstid (ms)')
     plt.legend()
     plt.tight_layout()
     plt.show()
 
-def lineDiagram3():
+def lineDiagram3():                                     # Fetchtime
     plt.figure(figsize=(12,5))
     
     plt.plot(df1['Table'] * 1000, label='MySQL')
@@ -60,16 +69,16 @@ def lineDiagram3():
     plt.legend()
     plt.tight_layout()
     plt.show()
-    
+
 def bars1():
     plt.figure(figsize=(12,5))
-    y1 = df1['Decryption'].mean()
-    y2 = df2['Decryption'].mean()
+    y1 = df1['Decryption'] * 1000 
+    y2 = df2['Decryption'] * 1000
     
     colors = ['tab:blue', 'tab:orange']
       
     x = ["MySQL", "MongoDB"]
-    y = [y1, y2]
+    y = [y1.mean(), y2.mean()]
     
     plt.bar(x,y, color=colors)
     plt.title('Medelvärde Dekryption')
@@ -80,13 +89,13 @@ def bars1():
     
 def bars2():
     plt.figure(figsize=(12,5))
-    y1 = df1['Table'].mean()
-    y2 = df2['Table'].mean()
+    y1 = df1['Table'] * 1000
+    y2 = df2['Table'] * 1000
     
     colors = ['tab:blue', 'tab:orange']
       
     x = ["MySQL", "MongoDB"]
-    y = [y1, y2]
+    y = [y1.mean(), y2.mean()]
     
     plt.bar(x,y, color=colors)
     plt.title('Medelvärde Fetch')
@@ -95,7 +104,26 @@ def bars2():
     plt.tight_layout()
     plt.show()
     
-bars1()
-bars2()
-lineDiagram1()
-lineDiagram3()
+def bars3():
+    plt.figure(figsize=(12,5))
+    y1 = df3['Diff']
+    y2 = df4['Diff']
+    
+    colors = ['tab:blue', 'tab:orange']
+      
+    x = ["MySQL", "MongoDB"]
+    y = [y1.mean(), y2.mean()]
+    
+    plt.bar(x,y, color=colors)
+    plt.title('Medelvärde Laddningstid webbapplikation')
+    plt.ylabel('Responstid')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+    
+#lineDiagram1()
+lineDiagram2()
+#lineDiagram3()
+#bars1()
+#bars2()
+#bars3()

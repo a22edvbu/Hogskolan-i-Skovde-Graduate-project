@@ -73,20 +73,35 @@
                 
                 // Select function
                 echo "Select selected";
-                $querystring = 'SELECT * FROM emails 
-                WHERE ID = :ID 
-                  AND Date = :DATE 
-                  AND Mail_From = :MAIL_FROM 
-                  AND Mail_To = :MAIL_TO 
-                  AND Subject = :SUBJECT 
-                  AND Body = :BODY';
+                
+                if(!empty($_POST['sqlID'])){                            // ID
+                    $id = $_POST['sqlID'];
+                    $qWhere = "and ID = $id";
+                }
+                if(!empty($_POST['sqlDate'])){                          // Date
+                    $date = $_POST['sqlDate'];
+                    $qWhere = "and Date = $date";
+                }
+                if(!empty($_POST['sqlFrom'])){                          // Mail_From
+                    $mail_from = $_POST['sqlFrom'];
+                    $qWhere = "and Mail_From = '$mail_from'";
+                }
+                if(!empty($_POST['sqlTo'])){                            // Mail_To
+                    $mail_to = $_POST['sqlTo'];
+                    $qWhere = "and Mail_To = '$mail_to'";
+                }
+                if(!empty($_POST['sqlSubject'])){                       // Subject
+                    $subject = $_POST['sqlSubject'];
+                    $qWhere = "and Subject = '$subject'";
+                }
+                $qWhere = substr($qWhere, 3);
+
+                $qWhere = "WHERE " . $qWhere;
+
+                $querystring = 'SELECT * FROM emails ' .  $qWhere;
+
+                echo $querystring;
                 $stmt = $pdo->prepare($querystring);
-                $stmt->bindParam(':ID', $_POST['sqlID']);
-                $stmt->bindParam(':DATE', $_POST['sqlDate']);
-                $stmt->bindParam(':MAIL_FROM', $_POST['sqlFrom']);
-                $stmt->bindParam(':MAIL_TO', $_POST['sqlTo']);
-                $stmt->bindParam(':SUBJECT', $_POST['sqlSubject']);
-                $stmt->bindParam(':BODY', $_POST['sqlBody']);
                 $startmeasure3 = microtime(true);
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -114,7 +129,7 @@
         //     $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);     
         // }
     ?>
-    <h1>MySQL</h1>
+    <h1 class="title">MySQL</h1>
     <p>
         <div class="homeBtn"><a href="index.php">Home</a></div>
     </p>
@@ -191,7 +206,6 @@
                             // Subtract startMeasure form StopMeasure to get difference
                             $measuredTime2 = ($stopmeasure2 - $startmeasure2);
 
-                            $measuredTime2 += $measuredTime3;
                             // Print error if decryption fails
                             echo $decrypted ?: "[ERROR: Not Decrypted]";                    
                         } else if ($col == 'ID') {
@@ -224,7 +238,7 @@
             // Only logs time when there is something new to add.
             // Sends ID and measured Time to be inserted into CSV data
             if (!empty($measureArr)) {
-                logTime("sqlTest", $measureArr);
+                //logTime("sql", $measureArr);
             }    
 ?>
 </body>
