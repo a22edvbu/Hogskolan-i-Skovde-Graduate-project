@@ -71,36 +71,45 @@
 
             } else if ($sqlOperation == 'select'){
                 
-                // Select function
                 echo "Select selected";
                 
-                if(!empty($_POST['sqlID'])){                            // ID
+                $queryArr = [];
+                
+                if (!empty($_POST['sqlID'])) {                  // ID
                     $id = $_POST['sqlID'];
-                    $qWhere = "and ID = $id";
+                    $queryArr[] = "ID = $id";
                 }
-                if(!empty($_POST['sqlDate'])){                          // Date
+                if (!empty($_POST['sqlDate'])) {                // Date
                     $date = $_POST['sqlDate'];
-                    $qWhere = "and Date = $date";
+                    $queryArr[] = "Date = '$date'";
                 }
-                if(!empty($_POST['sqlFrom'])){                          // Mail_From
+                if (!empty($_POST['sqlFrom'])) {                // Mail_From
                     $mail_from = $_POST['sqlFrom'];
-                    $qWhere = "and Mail_From = '$mail_from'";
+                    $queryArr[] = "Mail_From = '$mail_from'";
                 }
-                if(!empty($_POST['sqlTo'])){                            // Mail_To
+                if (!empty($_POST['sqlTo'])) {                  // Mail_To
                     $mail_to = $_POST['sqlTo'];
-                    $qWhere = "and Mail_To = '$mail_to'";
+                    $queryArr[] = "Mail_To = '$mail_to'";
                 }
-                if(!empty($_POST['sqlSubject'])){                       // Subject
+                if (!empty($_POST['sqlSubject'])) {             // Subject
                     $subject = $_POST['sqlSubject'];
-                    $qWhere = "and Subject = '$subject'";
+                    $queryArr[] = "Subject = '$subject'";
                 }
-                $qWhere = substr($qWhere, 3);
 
-                $qWhere = "WHERE " . $qWhere;
+                
+                echo "<pre>";
+                    print_r($queryArr);
+                echo "</pre>";
+            
+                // If array has item, delete AND from first item string 
+                if (!empty($queryArr)) {
+                    $qWhere = 'WHERE ' . implode(' AND ', $queryArr);
+                }
+                
+                $querystring = 'SELECT * FROM emails ' . $qWhere;
+                
+                //echo $querystring;
 
-                $querystring = 'SELECT * FROM emails ' .  $qWhere;
-
-                echo $querystring;
                 $stmt = $pdo->prepare($querystring);
                 $startmeasure3 = microtime(true);
                 $stmt->execute();

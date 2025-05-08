@@ -61,22 +61,33 @@
                 echo "Document inserted.";
         
             } elseif ($mdbOperation == 'select') {
-                echo "Select selected";
-        
-                $filter = [
-                    'ID' => $_POST['mdbID'],
-                    'Date' => $_POST['mdbDate'],
-                    'Mail_From' => $_POST['mdbFrom'],
-                    'Mail_To' => $_POST['mdbTo'],
-                    'Subject' => $_POST['mdbSubject'],
-                ];
-        
-                // Remove empty fields from filter
-                $filter = array_filter($filter);
-                $startmeasure3 = microtime(true);
+                $filter = [];
 
+                if (!empty($_POST['mdbID'])) {
+                    $filter['ID'] = (int)$_POST['mdbID'];           // ID
+                }                
+                if (!empty($_POST['mdbDate'])) {
+                    $filter['Date'] = $_POST['mdbDate'];            // Date
+                }
+                if (!empty($_POST['mdbFrom'])) {
+                    $filter['From'] = $_POST['mdbFrom'];            // From
+                }
+                if (!empty($_POST['mdbTo'])) {
+                    $filter['To'] = $_POST['mdbTo'];                // To
+                }
+                if (!empty($_POST['mdbSubject'])) {
+                    $filter['Subject'] = $_POST['mdbSubject'];      // Subject
+                }
+
+                echo "<pre>";
+                    print_r($filter);
+                echo "</pre>";
+
+                // Run the query
+                $startmeasure3 = microtime(true);
                 $fetchedResults = $collection->find($filter);
-        
+
+
             } elseif ($mdbOperation == 'delete') {
                 echo "Delete selected";
             } else {
@@ -94,7 +105,7 @@
         // }
         
     ?>
-    <h1>MongoDB</h1>
+    <h1 class="title">MongoDB</h1>
     <p>
         <div class="homeBtn"><a href="index.php">Home</a></div>
     </p>
@@ -174,8 +185,6 @@
                         // Subtract startMeasure form StopMeasure to get difference
                         $stopmeasure2 = microtime(true);  
                         $measuredTime2 = ($stopmeasure2 - $startmeasure2);
-
-                        $measuredTime2 += $measuredTime3;
                         
                         // Print error if decryption fails
                         echo $decrypted ?: "[ERROR: Not Decrypted]";    
@@ -209,7 +218,7 @@
             // Only logs time when there is something new to add.
             // Sends ID and measured Time to be inserted into CSV data
             if (!empty($measureArr)) {
-                logTime("mdbTests", $measureArr);
+                //logTime("mdb", $measureArr);
             }    
     ?>
 </body>
