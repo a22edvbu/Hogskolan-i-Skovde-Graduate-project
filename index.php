@@ -16,8 +16,8 @@
     function writeToCSV($method) {
         $row = 0;
         
-        if (($handle = fopen("testEmails.csv", "r")) !== FALSE) {
-            $output = fopen("EmailsEncrypted.csv", "w"); // New file for encrypted data
+        if (($handle = fopen("structuredEmails16k.csv", "r")) !== FALSE) {
+            $output = fopen("eCrypted.csv", "w"); // New file for encrypted data
             
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $iv = openssl_random_pseudo_bytes(16); 

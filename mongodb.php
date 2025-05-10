@@ -29,6 +29,10 @@
         }
 
         $method = "AES-256-CBC";
+        
+        // 500, 1000, 2000, 4000, 8000
+        $queryLimit = "";
+
         // declares the measurment variables before logging.
         $id = null;
         $measuredTime1 = null;
@@ -38,10 +42,8 @@
 
         $fetchedResults = [];
 
-        if (isset($_POST['mdbID'])) {
-            $mdbOperation = $_POST['mdbOperation'];
-        
-            if ($mdbOperation == 'insert') {
+        if (isset($_POST['mdbID'])) {        
+            if ($_POST['mdbOperation'] == 'insert') {
                 echo "Insert selected";
         
                 // Encrypt the email body
@@ -60,15 +62,26 @@
                 $collection->insertOne($doc);
                 echo "Document inserted.";
         
-            } elseif ($mdbOperation == 'select') {
+            } elseif ($_POST['mdbOperation'] == 'select') {
                 $filter = [];
 
                 if (!empty($_POST['mdbID'])) {
                     $filter['ID'] = (int)$_POST['mdbID'];           // ID
                 }                
-                if (!empty($_POST['mdbDate'])) {
-                    $filter['Date'] = $_POST['mdbDate'];            // Date
+                if (!empty($_POST['mdbDate'])) {                    // Date
+                    // fetch all documents that fit within mdbDate timeline
+                    $mdbDate = $_POST['mdbDate'];
+                
+                    // Convert from yyyy-mm-dd to MongoDB UTCDateTime for filter
+                    $startDate = new MongoDB\BSON\UTCDateTime((new DateTime($mdbDate . ' 00:00:00'))->getTimestamp() * 1000);
+                    $endDate = new MongoDB\BSON\UTCDateTime((new DateTime($mdbDate . ' 23:59:59'))->getTimestamp() * 1000);
+                
+                    $filter['Date'] = [
+                        '$gte' => $startDate,
+                        '$lte' => $endDate
+                    ];
                 }
+                
                 if (!empty($_POST['mdbFrom'])) {
                     $filter['From'] = $_POST['mdbFrom'];            // From
                 }
@@ -88,11 +101,15 @@
                 $fetchedResults = $collection->find($filter);
 
 
-            } elseif ($mdbOperation == 'delete') {
+            } elseif ($_POST['mdbOperation'] == 'delete') {
                 echo "Delete selected";
             } else {
                 echo "Default selected";
                 $startmeasure3 = microtime(true);
+
+                echo "<pre>";
+                    print_r($fetchedResults);
+                echo "</pre>";
 
                 $fetchedResults = $collection->find();
             }
@@ -146,15 +163,16 @@
     </form>
     <?php
     // prints out the contents of a table
+        //echo count($fetchedResults) . " Rows fetched" ?: "0 Rows fetched"; 
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
-                    echo "<th> _id</th>";
-                    echo "<th> ID</th>";
-                    echo "<th> Date </th>";
-                    echo "<th> From </th>";
-                    echo "<th> To </th>";  
-                    echo "<th> Subject </th>";  
+                    echo "<th style='width: 200px;'> _id</th>";
+                    echo "<th style='width: 20px;'> ID</th>";
+                    echo "<th style='width: 45px' > Date </th>";
+                    echo "<th style='width: 200px;'> From </th>";
+                    echo "<th style='width: 200px;'> To </th>";  
+                    echo "<th style='width: 200px;'> Subject </th>";  
                     echo "<th> Body </th>";  
                 echo "</tr>";             
             echo "</thead>";
@@ -172,33 +190,41 @@
 
                 // For each field in document, print out in cell
                 foreach ($doc as $field => $atr) {
-                    echo "<td>";
                     if ($field == 'Body') {  
+                        echo "<td style='text-align: justify;'>";
                         // Starts timer for measure
                         $startmeasure2 = microtime(true);
-
+                        
                         $decrypted = decryptText($atr, $method);
                         
                         // Stops timer for measure
                         $stopMeasure = microtime(true);  
-
+                        
                         // Subtract startMeasure form StopMeasure to get difference
                         $stopmeasure2 = microtime(true);  
                         $measuredTime2 = ($stopmeasure2 - $startmeasure2);
                         
                         // Print error if decryption fails
-                        echo $decrypted ?: "[ERROR: Not Decrypted]";    
+                        echo htmlspecialchars($decrypted) ?: "[ERROR: Not Decrypted]";
+                        //echo $decrypted ?: "[ERROR: Not Decrypted]";   
+                        echo "</td>"; 
                     } else if ($field == 'ID') {
+                        echo "<td>";
                         // Highlights ID
                         $id = $atr;
-                        echo "<b>" . $atr . "</b>";
+                        echo "<b>" . htmlspecialchars($atr) . "</b>";
+                        echo "</td>"; 
                     } else if ($field == 'Date') {
+                        echo "<td>";
                         // Reformats the date in db to readable YEAR-MONTH-DAY
-                        echo $atr->toDateTime()->format('Y-m-d');
+                        
+                        echo htmlspecialchars($atr->toDateTime()->format('Y-m-d'));
+                        echo "</td>"; 
                     } else {
-                        echo $atr;
+                        echo "<td>";
+                        echo htmlspecialchars($atr);
+                        echo "</td>"; 
                     }
-                    echo "</td>";
                 }
                 // Subtract startMeasure form StopMeasure to get difference
                 $stopmeasure1 = microtime(true);

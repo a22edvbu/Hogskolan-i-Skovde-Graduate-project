@@ -10,10 +10,11 @@ form {
 table { 
     margin: 0 auto;
     margin-top: 10px;
-    width: 75%;
+    width: 90%;
     text-align: center;
     border-spacing: unset;
     border: 1px solid black;
+    table-layout: fixed;
 }
 th {
     background-color: #aca4b0;
@@ -22,4 +23,7 @@ th {
 }
 tr:nth-child(odd) {
     background-color: #dbd1e0;
+}
+td {
+    overflow: hidden;
 }

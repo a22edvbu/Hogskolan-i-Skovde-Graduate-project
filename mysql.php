@@ -20,12 +20,12 @@
         $username = "root";
         $password = "";
         
-        // Key used for encrypting and decrypting data
-        // $keyFile = fopen("encryptionKey.txt", "r") or die("Unable to open file!");
-        // $encryptionKey = fread($keyFile,filesize("encryptionKey.txt"));
-        // fclose($keyFile);
         // The encryption method used
         $method = "AES-256-CBC";
+
+        // Limits the amount of rows fetched
+        // 500, 1000, 2000, 4000, 8000
+        $queryLimit = " LIMIT " . 500;
         
         // declares the measurment variables before logging.
         $id = null;
@@ -33,6 +33,7 @@
         $measuredTime2 = null;
         $measuredTime3 = null;
         $measureArr = [];
+        $fetchedResults = [];
 
         
         // DB connect
@@ -46,10 +47,8 @@
         }
 
         // Recieves the POST from form and identify type of operation
-        if (isset($_POST['sqlID'])) {
-            $sqlOperation = $_POST['sqlOperation'];
-            
-            if($sqlOperation == 'insert') {
+        if (isset($_POST['sqlID'])) {            
+            if($_POST['sqlOperation'] == 'insert') {
                 
                 // Insert function
                 echo "Insert selected";
@@ -69,7 +68,7 @@
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-            } else if ($sqlOperation == 'select'){
+            } else if ($_POST['sqlOperation'] == 'select'){
                 
                 echo "Select selected";
                 
@@ -106,7 +105,7 @@
                     $qWhere = 'WHERE ' . implode(' AND ', $queryArr);
                 }
                 
-                $querystring = 'SELECT * FROM emails ' . $qWhere;
+                $querystring = 'SELECT * FROM emails ' . $qWhere . $queryLimit;
                 
                 //echo $querystring;
 
@@ -114,13 +113,13 @@
                 $startmeasure3 = microtime(true);
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            } else if ($sqlOperation == 'delete') {
+            } else if ($_POST['sqlOperation'] == 'delete') {
                 echo "Delete selected";
 
             // Default function
             } else {
                 echo "Default selected";
-                $querystring = 'SELECT * FROM emails';
+                $querystring = 'SELECT * FROM emails' . $queryLimit;
                 $stmt = $pdo->prepare($querystring);
                 $startmeasure3 = microtime(true);
                 $stmt->execute();
@@ -179,15 +178,16 @@
     </form>
     <?php
     // prints out the contents of a table
+        echo count($fetchedResults) . " Rows fetched" ?: "0 Rows fetched"; 
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
-                    echo "<th> ID</th>";
-                    echo "<th> Date </th>";
-                    echo "<th> From </th>";
-                    echo "<th> To </th>";  
-                    echo "<th> Subject </th>";  
-                    echo "<th> Body </th>";  
+                    echo "<th style='width: 20px;'> ID</th>";
+                    echo "<th style='width: 45px' > Date </th>";
+                    echo "<th style='width: 200px;'> From </th>";
+                    echo "<th style='width: 200px;'> To </th>";  
+                    echo "<th style='width: 200px;'> Subject </th>"; 
+                    echo "<th> Body </th>"; 
                 echo "</tr>";             
             echo "</thead>";
             echo "<tbody>";
@@ -201,9 +201,9 @@
                     $startmeasure1 = microtime(true);   
                     
                     foreach ($row as $col=>$val) {
-                        echo "<td>";
                         // Only decrypts the Body column
                         if ($col == 'Body') {  
+                            echo "<td>";
                             // Starts timer for measure
                             $startmeasure2 = microtime(true);
                             
@@ -214,18 +214,22 @@
                             
                             // Subtract startMeasure form StopMeasure to get difference
                             $measuredTime2 = ($stopmeasure2 - $startmeasure2);
-
+                            
                             // Print error if decryption fails
                             echo $decrypted ?: "[ERROR: Not Decrypted]";                    
+                            echo "</td>";
                         } else if ($col == 'ID') {
+                            echo "<td>";
                             // Highlights ID
                             $id = $val;
                             echo "<b>" . $val . "</b>";
                             $idArr[] = $id;
+                            echo "</td>";
                         } else {
+                            echo "<td>";
                             echo $val;
+                            echo "</td>";
                         }
-                        echo "</td>";
                     }
                     $stopmeasure1 = microtime(true);
                     
