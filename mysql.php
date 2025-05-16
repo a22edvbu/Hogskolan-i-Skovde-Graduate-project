@@ -25,16 +25,17 @@
 
         // Limits the amount of rows fetched
         // 500, 1000, 2000, 4000, 8000
-        $queryLimit = " LIMIT " . 500;
+        $queryLimit = 8000;
         
         // declares the measurment variables before logging.
         $id = null;
         $measuredTime1 = null;
         $measuredTime2 = null;
         $measuredTime3 = null;
+        $avgDecrypt;
         $measureArr = [];
+        $measureFetchArr = [];
         $fetchedResults = [];
-
         
         // DB connect
         try {
@@ -105,7 +106,7 @@
                     $qWhere = 'WHERE ' . implode(' AND ', $queryArr);
                 }
                 
-                $querystring = 'SELECT * FROM emails ' . $qWhere . $queryLimit;
+                $querystring = 'SELECT * FROM emails ' . $qWhere . ' LIMIT ' . $queryLimit;
                 
                 //echo $querystring;
 
@@ -114,12 +115,13 @@
                 $stmt->execute();
                 $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
             } else if ($_POST['sqlOperation'] == 'delete') {
+                
                 echo "Delete selected";
 
-            // Default function
+                // Default function
             } else {
                 echo "Default selected";
-                $querystring = 'SELECT * FROM emails' . $queryLimit;
+                $querystring = 'SELECT * FROM emails' . ' LIMIT ' . $queryLimit;
                 $stmt = $pdo->prepare($querystring);
                 $startmeasure3 = microtime(true);
                 $stmt->execute();
@@ -128,7 +130,6 @@
             $stopmeasure3 = microtime(true);
             $measuredTime3 = $stopmeasure3 - $startmeasure3;
         }
-        $_POST = [];
         // else {
         //     echo "Default selected";
         //     $querystring = 'SELECT * FROM emails';
@@ -157,28 +158,28 @@
 
 
         <label for="sqlID">ID: </label>
-        <input type="text" name="sqlID" id="sqlID">
+        <input type="text" class="idInput" name="sqlID" id="sqlID">
 
         <label for="sqlDate">Date: </label>
-        <input type="text" name="sqlDate" id="sqlDate">
+        <input type="text" class="dateInput" name="sqlDate" id="sqlDate">
         
         <label for="sqlFrom">From: </label>
-        <input type="text" name="sqlFrom" id="sqlFrom">
+        <input type="text" class="fromInput" name="sqlFrom" id="sqlFrom">
         
         <label for="sqlTo">To: </label>
-        <input type="text" name="sqlTo" id="sqlTo">
+        <input type="text" class="toInput" name="sqlTo" id="sqlTo">
         
         <label for="sqlSubject">Subject: </label>
-        <input type="text" name="sqlSubject" id="sqlSubject">
+        <input type="text" class="subjectInput" name="sqlSubject" id="sqlSubject">
         
         <label for="sqlBody">Body (only for INSERT!): </label>
-        <input type="text" name="sqlBody" id="sqlBody">
+        <input type="text" class="bodyInput" name="sqlBody" id="sqlBody">
         
         <input type="submit" class="submitBtn" value="GO">
     </form>
     <?php
     // prints out the contents of a table
-        echo count($fetchedResults) . " Rows fetched" ?: "0 Rows fetched"; 
+        //echo count($fetchedResults) . " Rows fetched" ?: "0 Rows fetched"; 
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
@@ -194,7 +195,7 @@
             
             //clearFile("sql");
 
-            // foreach($pdo->query('select * from emails', PDO::FETCH_ASSOC) AS $row) {
+            echo "<p class='resultNr'>" . count($fetchedResults) . " Rows fetched </p>";
             if (!empty($fetchedResults)) {
                 foreach($fetchedResults as $row) {
                     echo "<tr>";
@@ -239,19 +240,26 @@
                     $measureArr[] = [
                         'id' => $id,
                         'decrypt' => $measuredTime2,
-                        'row' => $measuredTime1,
-                        'table' => $measuredTime3
+                        'row' => $measuredTime1
                     ];
                     echo "</tr>";
                 }
+                $decryptTimes = array_column($measureArr, 'decrypt');
+                $avgDecrypt = array_sum($decryptTimes) / count($decryptTimes);
             } 
             echo "</tbody>";
             echo "</Table>";
-            
+
+            $measureFetchArr[] = [
+                'table' => $measuredTime3,
+                'matches' => count($fetchedResults),
+                'avgDecrypt' => $avgDecrypt
+            ];
             // Only logs time when there is something new to add.
             // Sends ID and measured Time to be inserted into CSV data
             if (!empty($measureArr)) {
-                //logTime("sql", $measureArr);
+                //logTime("sqlFilteredAll" . $queryLimit, $measureArr);
+                //logTime("sqlFilteredFetchALL" . $queryLimit, $measureFetchArr);
             }    
 ?>
 </body>

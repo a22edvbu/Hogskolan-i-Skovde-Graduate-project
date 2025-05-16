@@ -15,8 +15,6 @@
         require 'getPrivateKey.php';
         require 'logTime.php';
 
-
-
         // Connects to MongoDB through XAMPP server with feedback
         try {
             $client = new MongoDB\Client("mongodb://localhost:27017");
@@ -31,14 +29,16 @@
         $method = "AES-256-CBC";
         
         // 500, 1000, 2000, 4000, 8000
-        $queryLimit = "";
+        $queryLimit = 8000;
 
         // declares the measurment variables before logging.
         $id = null;
         $measuredTime1 = null;
         $measuredTime2 = null;
         $measuredTime3 = null;
+        $avgDecrypt;
         $measureArr = [];
+        $measureFetchArr = [];
 
         $fetchedResults = [];
 
@@ -98,8 +98,9 @@
 
                 // Run the query
                 $startmeasure3 = microtime(true);
-                $fetchedResults = $collection->find($filter);
-
+                //$fetchedResults = $collection->find($filter);
+                $cursor = $collection->find($filter, ['limit' => $queryLimit]);
+                $fetchedResults = iterator_to_array($cursor);
 
             } elseif ($_POST['mdbOperation'] == 'delete') {
                 echo "Delete selected";
@@ -107,11 +108,9 @@
                 echo "Default selected";
                 $startmeasure3 = microtime(true);
 
-                echo "<pre>";
-                    print_r($fetchedResults);
-                echo "</pre>";
+                $cursor = $collection->find([], ['limit' => $queryLimit]);
+                $fetchedResults = iterator_to_array($cursor);
 
-                $fetchedResults = $collection->find();
             }
             $stopmeasure3 = microtime(true);
             $measuredTime3 = $stopmeasure3 - $startmeasure3;
@@ -142,28 +141,30 @@
 
 
         <label for=mdblID">ID: </label>
-        <input type="text" name="mdbID" id="mdbID">
+        <input type="text" class="idInput" name="mdbID" id="mdbID">
 
         <label for="mdbDate">Date: </label>
-        <input type="text" name="mdbDate" id="mdbDate">
+        <input type="text" class="dateInput" name="mdbDate" id="mdbDate">
         
         <label for="mdbFrom">From: </label>
-        <input type="text" name="mdbFrom" id="mdbFrom">
+        <input type="text" class="fromInput" name="mdbFrom" id="mdbFrom">
         
         <label for="mdbTo">To: </label>
-        <input type="text" name="mdbTo" id="mdbTo">
+        <input type="text" class="toInput" name="mdbTo" id="mdbTo">
         
         <label for="mdbSubject">Subject: </label>
-        <input type="text" name="mdbSubject" id="mdbSubject">
+        <input type="text" class="subjectInput" name="mdbSubject" id="mdbSubject">
         
         <label for="mdbBody">Body (only for INSERT!): </label>
-        <input type="text" name="mdbBody" id="mdbBody">
+        <input type="text" class="bodyInput" name="mdbBody" id="mdbBody">
         
         <input type="submit" class="submitBtn" value="GO">
     </form>
     <?php
     // prints out the contents of a table
-        //echo count($fetchedResults) . " Rows fetched" ?: "0 Rows fetched"; 
+        //echo count($fetchedResults) . " Rows fetched" ?: "0 Rows fetched";
+        echo "<p class='resultNr'>" . count($fetchedResults) . " Rows fetched </p>";
+ 
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
@@ -178,7 +179,7 @@
             echo "</thead>";
 
             // Clears file for each test
-            //clearFile("mdb");
+            // clearFile("mdb");
 
             // For each Document, print out in row
             foreach ($fetchedResults as $doc) {
@@ -186,19 +187,16 @@
                 $startmeasure1 = microtime(true);   
 
                 // Save ID for current row
-                //$id = "";
+                // $id = "";
 
                 // For each field in document, print out in cell
                 foreach ($doc as $field => $atr) {
                     if ($field == 'Body') {  
-                        echo "<td style='text-align: justify;'>";
+                        echo "<td>";
                         // Starts timer for measure
                         $startmeasure2 = microtime(true);
                         
                         $decrypted = decryptText($atr, $method);
-                        
-                        // Stops timer for measure
-                        $stopMeasure = microtime(true);  
                         
                         // Subtract startMeasure form StopMeasure to get difference
                         $stopmeasure2 = microtime(true);  
@@ -233,18 +231,25 @@
                 $measureArr[] = [
                     'id' => $id,
                     'decrypt' => $measuredTime2,
-                    'row' => $measuredTime1,
-                    'table' => $measuredTime3
+                    'row' => $measuredTime1
                 ];
                                
                 echo "</tr>";
+                $decryptTimes = array_column($measureArr, 'decrypt');
+                $avgDecrypt = array_sum($decryptTimes) / count($decryptTimes);
             }
             echo "</tbody>";
             echo "</Table>";
+            $measureFetchArr[] = [
+                'table' => $measuredTime3,
+                'matches' => count($fetchedResults),
+                'avgDecrypt' => $avgDecrypt
+            ];
             // Only logs time when there is something new to add.
             // Sends ID and measured Time to be inserted into CSV data
             if (!empty($measureArr)) {
-                //logTime("mdb", $measureArr);
+                //logTime("mdbFilteredAll" . $queryLimit, $measureArr);
+                //logTime("mdbFilteredFetchALL" . $queryLimit, $measureFetchArr);
             }    
     ?>
 </body>

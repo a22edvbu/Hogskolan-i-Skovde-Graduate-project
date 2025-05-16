@@ -1,9 +1,13 @@
 <?php
 function logTime($type, $dataArr) {
-    $csvFile = fopen($type ."Data1.csv", "a");
+    $csvFile = fopen("Measurements/Filtered Search/8000 Limit/" . $type ."Data1.csv", "a");
 
     foreach ($dataArr as $row) {
-        fputcsv($csvFile, [$row['id'], $row['decrypt'], $row['row'], $row['table']]);
+        if ($type === "mdbFilteredAll8000" || $type === "sqlFilteredAll8000") {
+            fputcsv($csvFile, [$row['id'], $row['decrypt'], $row['row']]);
+        } else {
+            fputcsv($csvFile, [$row['table'], $row['matches'], $row['avgDecrypt']]);
+        }
     }
 
     fclose($csvFile);
