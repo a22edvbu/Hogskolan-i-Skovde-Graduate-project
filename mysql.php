@@ -35,6 +35,7 @@
         $avgDecrypt;
         $measureArr = [];
         $measureFetchArr = [];
+        $encryptionTimeArr = [];
         $fetchedResults = [];
         
         // DB connect
@@ -119,7 +120,7 @@
 
                 // Default function
             } else if ($_POST['sqlOperation'] == 'insertAll') {
-                if (($handle = fopen('structuredEmails8k.csv', "r")) !== false) {
+                if (($handle = fopen('structuredEmails500.csv', "r")) !== false) {
                     $header = fgetcsv($handle); // Skip the header
 
                     $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) 
@@ -128,36 +129,62 @@
 
                     $measureArrInsert = [];
 
+                    $startMeasure4 = microtime(true);
                     while (($row = fgetcsv($handle)) !== false) {
-                        // Encrypt the Body column (index 5)
+                        // Encrypt the Body column
                         $sqlBody = $row[5];
+                        $startMeasure5 = microtime(true);
                         $encryptedBody = encryptText($sqlBody, $method);
-
-                        // Bind values
+                        $stopMeasure5 = microtime(true);
+                        
+                        $measureTime5 = $stopMeasure5 - $startMeasure5;
+                        
                         $stmt->bindParam(':ID', $row[0]);
                         $stmt->bindParam(':DATE', $row[1]);
                         $stmt->bindParam(':MAIL_FROM', $row[2]);
                         $stmt->bindParam(':MAIL_TO', $row[3]);
                         $stmt->bindParam(':SUBJECT', $row[4]);
                         $stmt->bindParam(':BODY', $encryptedBody);
-
-                        // Measure time
-                        $startMeasure4 = microtime(true);
+                        
+                        $startMeasureInsert = microtime(true);
                         $stmt->execute();
-                        $stopMeasure4 = microtime(true);
+                        $stopMeasureInsert = microtime(true);
 
-                        $measureTime4 = $stopMeasure4 - $startMeasure4;
-                        $measureArrInsert[] = [
-                            'id' => $row[0],
-                            'insert_time' => $measureTime4
+                        $measureTimeInsert = $stopMeasureInsert - $startMeasureInsert;
+                        $encryptionTimeArr[] = [
+                            'insertTime' => $measureTimeInsert,
+                            'encrypt' => $measureTime5
                         ];
                     }
+                    $stopMeasure4 = microtime(true);
+                    
+
+                    $measureTime4 = $stopMeasure4 - $startMeasure4;
+                    
+                    $insertTimes = array_column($encryptionTimeArr, 'insertTime');
+                    $encryptTimes = array_column($encryptionTimeArr, 'encrypt');
+
+                    $totalEncryptTime = array_sum($encryptTimes);
+
+                    $avgEncrypt = array_sum($encryptTimes) / count($encryptTimes);
+                    $avgInsert = array_sum($insertTimes) / count($insertTimes);
+
+                    $measureArrInsert[] = [
+                        'insert' => $measureTime4 - $totalEncryptTime,
+                        'amount' => count($encryptionTimeArr),
+                        'avgEncrypt' => $avgEncrypt,
+                        'avgInsert' => $avgInsert
+                    ];
 
                     fclose($handle);
                     echo "Data inserted successfully.";
 
-                    // Optionally log to CSV or display
-                    // logTime("insertTimes", $measureArr); // If you want to log
+                    logTime("sqlInsert", $measureArrInsert);
+                    
+                    $querystring = 'DELETE FROM emails'; 
+                    $stmt = $pdo->prepare($querystring);
+                    $stmt->execute();
+
                 } else {
                     echo "Failed to open file.";
                 }

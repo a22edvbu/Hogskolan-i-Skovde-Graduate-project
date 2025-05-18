@@ -39,7 +39,7 @@
         $avgDecrypt;
         $measureArr = [];
         $measureFetchArr = [];
-
+        $encryptionTimeArr = [];
         $fetchedResults = [];
 
         if (isset($_POST['mdbID'])) {        
@@ -104,6 +104,69 @@
 
             } elseif ($_POST['mdbOperation'] == 'delete') {
                 echo "Delete selected";
+            } else if ($_POST['mdbOperation'] == 'insertAll') {
+                if (($handle = fopen('structuredEmails500.csv', "r")) !== false) {
+                    echo "Insert All selected";
+                    $header = fgetcsv($handle); // Skip the header
+                    
+                    // Encrypt the email body
+                    $startMeasure4 = microtime(true);
+                    while (($row = fgetcsv($handle)) !== false) {
+
+                        $mdbBody = $_POST['mdbBody'];
+                        $startMeasure5 = microtime(true);
+                        $encryptedBody = encryptText($mdbBody, $method);
+                        $stopMeasure5 = microtime(true);
+
+                        $measureTime5 = $stopMeasure5 - $startMeasure5;
+                        
+                        $doc = [
+                            'ID' => $row[0],
+                            'Date' => $row[1],
+                            'Mail_From' => $row[2],
+                            'Mail_To' => $row[3],
+                            'Subject' => $row[4],
+                            'Body' => $encryptedBody
+                        ];
+                        $startMeasureInsert = microtime(true);
+                        $collection->insertOne($doc);
+                        $stopMeasureInsert = microtime(true);
+
+                        $measureTimeInsert = $stopMeasureInsert - $startMeasureInsert;
+                        $encryptionTimeArr[] = [
+                            'insertTime' => $measureTimeInsert,
+                            'encrypt' => $measureTime5
+                        ];
+
+                        echo "Document inserted.";
+                    }
+                    $stopMeasure4 = microtime(true);
+                    
+
+                    $measureTime4 = $stopMeasure4 - $startMeasure4;
+                    
+                    $insertTimes = array_column($encryptionTimeArr, 'insertTime');
+                    $encryptTimes = array_column($encryptionTimeArr, 'encrypt');
+
+                    $totalEncryptTime = array_sum($encryptTimes);
+
+                    $avgEncrypt = array_sum($encryptTimes) / count($encryptTimes);
+                    $avgInsert = array_sum($insertTimes) / count($insertTimes);
+
+                    $measureArrInsert[] = [
+                        'insert' => $measureTime4 - $totalEncryptTime,
+                        'amount' => count($encryptionTimeArr),
+                        'avgEncrypt' => $avgEncrypt,
+                        'avgInsert' => $avgInsert
+                    ];
+
+                    fclose($handle);
+                    echo "Data inserted successfully.";
+
+                    // Optionally log to CSV or display
+                    logTime("mdbInsert", $measureArrInsert); // If you want to log
+                    $collection->deleteMany([]);
+                }
             } else {
                 echo "Default selected";
                 $startmeasure3 = microtime(true);
@@ -137,8 +200,9 @@
         <input type="radio" name="mdbOperation" id="mdbDelete" class="deleteRadio" value="delete">
         <label for="mdbDelete">DELETE</label>
         <input type="radio" name="mdbOperation" id="mdbDefault" class="defaultRadio" value="default">
-        <label for="mdbDefault">Show All</label><br>
-
+        <label for="mdbDefault">Show All</label>
+        <input type="radio" name="mdbOperation" id="mdbInsertAll" class="insertAllRadio" value="insertAll">
+        <label for="mdbInsertAll">Insert All</label><br>
 
         <label for=mdblID">ID: </label>
         <input type="text" class="idInput" name="mdbID" id="mdbID">
@@ -169,7 +233,7 @@
             echo "<thead>";
                 echo "<tr>";
                     echo "<th style='width: 200px;'> _id</th>";
-                    echo "<th style='width: 20px;'> ID</th>";
+                    echo "<th style='width: 35px;'> ID</th>";
                     echo "<th style='width: 45px' > Date </th>";
                     echo "<th style='width: 200px;'> From </th>";
                     echo "<th style='width: 200px;'> To </th>";  
@@ -250,6 +314,7 @@
             if (!empty($measureArr)) {
                 //logTime("mdbFilteredAll" . $queryLimit, $measureArr);
                 //logTime("mdbFilteredFetchALL" . $queryLimit, $measureFetchArr);
+
             }    
     ?>
 </body>

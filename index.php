@@ -13,11 +13,38 @@
 
     $method = "AES-256-CBC";
 
+    function decryptCSV($method) {
+        $row = 0;
+        
+        if (($handle = fopen("structuredEmails8k.csv", "r")) !== FALSE) {
+            $output = fopen("./Measurements/emails8k-edit.csv", "w"); // New file for encrypted data
+            
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) { 
+                if ($row === 0) {
+                    // Write out other columns as normal
+                    fputcsv($output, $data);
+                } else {
+                    // Encrypt the BODY column
+                    if (isset($data[5])) {
+                        $data[5] = decryptText($data[5], $method);
+                    }
+                    fputcsv($output, $data); // Write modified row to file
+                }
+                $row++;
+            }
+        
+            fclose($handle);
+            fclose($output);
+            echo "CSV file DeCrypted! saved to emails8K-edit.csv";
+        } else {
+            echo "Error opening testEmails.csv.";
+        }
+    }
     function writeToCSV($method) {
         $row = 0;
         
-        if (($handle = fopen("structuredEmails16k.csv", "r")) !== FALSE) {
-            $output = fopen("eCrypted.csv", "w"); // New file for encrypted data
+        if (($handle = fopen("structuredEmails8k.csv", "r")) !== FALSE) {
+            $output = fopen("emails8k-edit.csv", "w"); // New file for encrypted data
             
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
                 $iv = openssl_random_pseudo_bytes(16); 
