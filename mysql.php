@@ -50,8 +50,7 @@
         // Recieves the POST from form and identify type of operation
         if (isset($_POST['sqlID'])) {            
             if($_POST['sqlOperation'] == 'insert') {
-                
-                // Insert function
+                // // Insert function
                 echo "Insert selected";
                 // Encrypt the email body
                 $sqlBody = $_POST['sqlBody'];
@@ -119,6 +118,49 @@
                 echo "Delete selected";
 
                 // Default function
+            } else if ($_POST['sqlOperation'] == 'insertAll') {
+                if (($handle = fopen('structuredEmails8k.csv', "r")) !== false) {
+                    $header = fgetcsv($handle); // Skip the header
+
+                    $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) 
+                                    VALUES (:ID, :DATE, :MAIL_FROM, :MAIL_TO, :SUBJECT, :BODY)';
+                    $stmt = $pdo->prepare($querystring);
+
+                    $measureArrInsert = [];
+
+                    while (($row = fgetcsv($handle)) !== false) {
+                        // Encrypt the Body column (index 5)
+                        $sqlBody = $row[5];
+                        $encryptedBody = encryptText($sqlBody, $method);
+
+                        // Bind values
+                        $stmt->bindParam(':ID', $row[0]);
+                        $stmt->bindParam(':DATE', $row[1]);
+                        $stmt->bindParam(':MAIL_FROM', $row[2]);
+                        $stmt->bindParam(':MAIL_TO', $row[3]);
+                        $stmt->bindParam(':SUBJECT', $row[4]);
+                        $stmt->bindParam(':BODY', $encryptedBody);
+
+                        // Measure time
+                        $startMeasure4 = microtime(true);
+                        $stmt->execute();
+                        $stopMeasure4 = microtime(true);
+
+                        $measureTime4 = $stopMeasure4 - $startMeasure4;
+                        $measureArrInsert[] = [
+                            'id' => $row[0],
+                            'insert_time' => $measureTime4
+                        ];
+                    }
+
+                    fclose($handle);
+                    echo "Data inserted successfully.";
+
+                    // Optionally log to CSV or display
+                    // logTime("insertTimes", $measureArr); // If you want to log
+                } else {
+                    echo "Failed to open file.";
+                }
             } else {
                 echo "Default selected";
                 $querystring = 'SELECT * FROM emails' . ' LIMIT ' . $queryLimit;
@@ -154,7 +196,9 @@
         <input type="radio" name="sqlOperation" id="sqlDelete" class="deleteRadio" value="delete">
         <label for="sqlDelete">DELETE</label>
         <input type="radio" name="sqlOperation" id="sqlDefault" class="defaultRadio" value="default">
-        <label for="sqlDefault">Show All</label><br>
+        <label for="sqlDefault">Show All</label>
+        <input type="radio" name="sqlOperation" id="sqlInsertAll" class="insertAllRadio" value="insertAll">
+        <label for="sqlInsertAll">Insert All</label><br>
 
 
         <label for="sqlID">ID: </label>
@@ -183,7 +227,7 @@
         echo "<Table>";
             echo "<thead>";
                 echo "<tr>";
-                    echo "<th style='width: 20px;'> ID</th>";
+                    echo "<th style='width: 35px;'> ID</th>";
                     echo "<th style='width: 45px' > Date </th>";
                     echo "<th style='width: 200px;'> From </th>";
                     echo "<th style='width: 200px;'> To </th>";  
