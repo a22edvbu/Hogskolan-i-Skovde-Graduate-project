@@ -105,7 +105,7 @@
             } elseif ($_POST['mdbOperation'] == 'delete') {
                 echo "Delete selected";
             } else if ($_POST['mdbOperation'] == 'insertAll') {
-                if (($handle = fopen('structuredEmails500.csv', "r")) !== false) {
+                if (($handle = fopen('structuredEmails8k.csv', "r")) !== false) {
                     echo "Insert All selected";
                     $header = fgetcsv($handle); // Skip the header
                     
@@ -113,7 +113,7 @@
                     $startMeasure4 = microtime(true);
                     while (($row = fgetcsv($handle)) !== false) {
 
-                        $mdbBody = $_POST['mdbBody'];
+                        $mdbBody = $row[5];
                         $startMeasure5 = microtime(true);
                         $encryptedBody = encryptText($mdbBody, $method);
                         $stopMeasure5 = microtime(true);
@@ -137,8 +137,6 @@
                             'insertTime' => $measureTimeInsert,
                             'encrypt' => $measureTime5
                         ];
-
-                        echo "Document inserted.";
                     }
                     $stopMeasure4 = microtime(true);
                     

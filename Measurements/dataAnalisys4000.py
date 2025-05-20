@@ -4,24 +4,22 @@ import matplotlib.pyplot as plt
 import glob as glob
 import os
 
-print("Current working directory:", os.getcwd())
-
-pathSql = pd.read_csv("./Measurements/All Search/1500 Measures/500 Limit/sqlQueryFetchALL500Data1.csv",
+pathSql = pd.read_csv("./Measurements/All Search/1500 Measures/4000 Limit/sqlQueryFetchALL4000Data1.csv",
     header=None,
     skiprows=1  # Skip the first row
 )
 
-pathMdb = pd.read_csv("./Measurements/All Search/1500 Measures/500 Limit/mdbQueryFetchALL500Data1.csv",
+pathMdb = pd.read_csv("./Measurements/All Search/1500 Measures/4000 Limit/mdbQueryFetchALL4000Data1.csv",
     header=None,
     skiprows=1  # Skip the first row
 )
 
-pathSqlInsert = pd.read_csv("./Measurements/Insert/500 Limit/sqlInsertData1.csv",
+pathSqlInsert = pd.read_csv("./Measurements/Insert/4000 Limit/sqlInsertData1.csv",
     header=None,
     skiprows=1  # Skip the first row
 )
 
-pathMdbInsert = pd.read_csv("./Measurements/Insert/500 Limit/mdbInsertData1.csv",
+pathMdbInsert = pd.read_csv("./Measurements/Insert/4000 Limit/mdbInsertData1.csv",
     header=None,
     skiprows=1  # Skip the first row
 )
@@ -43,11 +41,11 @@ df4 = pathMdbInsert
 
 def standardMean():
     
-    meanSql = df3['Insert'].mean()
-    steSql = df3['Insert'].std()
+    meanSql = df1['Table'].mean()
+    steSql = df1['Table'].std()
     
-    meanMdb = df4['Insert'].mean()
-    steMdb = df4['Insert'].std()
+    meanMdb = df2['Table'].mean()
+    steMdb = df2['Table'].std()
     print("------------Medelvärde-------------")
     print(meanSql * 1000)
     print(meanMdb * 1000)
@@ -62,12 +60,12 @@ def lineDiagramFetch():
     plt.plot(df1['Table'] * 1000, label='MySQL')
     plt.plot(df2['Table'] * 1000, label='MongoDb')
     
-    plt.title('Fetchtid 500 rader')
+    plt.title('Fetchtid 4000 rader')
     plt.xlabel('Antal fetches')
     plt.ylabel('Responstid (ms)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./Measurements/Fetch500Line.png")
+    plt.savefig("./Measurements/Fetch4000Line.png")
     plt.show()
     
 def barsSteFetch():
@@ -89,10 +87,10 @@ def barsSteFetch():
 
     plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
     plt.xticks(x_pos, x_labels)
-    plt.title("Medelvärde Fetchtid 500 rader")
+    plt.title("Medelvärde Fetchtid 4000 rader")
     plt.ylabel("Responstid (ms)")
     plt.tight_layout()
-    plt.savefig("./Measurements/Fetch500Bars.png")
+    plt.savefig("./Measurements/Fetch4000Bars.png")
     plt.show()
 
 def lineDiagramDecrypt():
@@ -101,12 +99,12 @@ def lineDiagramDecrypt():
     plt.plot(df1['AvgDecrypt'] * 1000, label='MySQL')
     plt.plot(df2['AvgDecrypt'] * 1000, label='MongoDb')
     
-    plt.title('Decrypteringstid 500 rader')
+    plt.title('Decrypteringstid 4000 rader')
     plt.xlabel('Antal fetches')
     plt.ylabel('Responstid (ms)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./Measurements/Decrypt500Line.png")
+    plt.savefig("./Measurements/Decrypt4000Line.png")
     plt.show()
     
 def barsSteDecrypt():
@@ -128,10 +126,10 @@ def barsSteDecrypt():
 
     plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
     plt.xticks(x_pos, x_labels)
-    plt.title("Medelvärde decrypteringstid 500 rader")
+    plt.title("Medelvärde decrypteringstid 4000 rader")
     plt.ylabel("Responstid (ms)")
     plt.tight_layout()
-    plt.savefig("./Measurements/Decrypt500Bars.png")
+    plt.savefig("./Measurements/Decrypt4000Bars.png")
     plt.show()
 
 def lineDiagramInsert():
@@ -140,12 +138,12 @@ def lineDiagramInsert():
     plt.plot(df3['Insert'] * 1000, label='MySQL')
     plt.plot(df4['Insert'] * 1000, label='MongoDb')
     
-    plt.title('Inserttid 500 rader')
+    plt.title('Inserttid 4000 rader')
     plt.xlabel('Antal fetches')
     plt.ylabel('Responstid (ms)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./Measurements/Insert500Line.png")
+    plt.savefig("./Measurements/Insert4000Line.png")
     plt.show()
     
 def barsSteInsert():
@@ -167,10 +165,10 @@ def barsSteInsert():
 
     plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
     plt.xticks(x_pos, x_labels)
-    plt.title("Medelvärde inserttid 500 rader")
+    plt.title("Medelvärde inserttid 4000 rader")
     plt.ylabel("Responstid (ms)")
     plt.tight_layout()
-    plt.savefig("./Measurements/Insert500Bars.png")
+    plt.savefig("./Measurements/Insert4000Bars.png")
     plt.show()
 
 def lineDiagramEncrypt():
@@ -179,12 +177,12 @@ def lineDiagramEncrypt():
     plt.plot(df3['AvgEncrypt'] * 1000, label='MySQL')
     plt.plot(df4['AvgEncrypt'] * 1000, label='MongoDb')
     
-    plt.title('Krypteringstid 500 rader')
+    plt.title('Krypteringstid 4000 rader')
     plt.xlabel('Antal fetches')
     plt.ylabel('Responstid (ms)')
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./Measurements/Encrypt500Line.png")
+    plt.savefig("./Measurements/Encrypt4000Line.png")
     plt.show()
     
 def barsSteEncrypt():
@@ -206,17 +204,17 @@ def barsSteEncrypt():
 
     plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
     plt.xticks(x_pos, x_labels)
-    plt.title("Medelvärde krypteringstid med 500 rader")
+    plt.title("Medelvärde krypteringstid med 4000 rader")
     plt.ylabel("Responstid (ms)")
     plt.tight_layout()
-    plt.savefig("./Measurements/Encrypt500Bars.png")
+    plt.savefig("./Measurements/Encrypt4000Bars.png")
     plt.show()
-    
+
 #lineDiagramFetch()
 #barsSteFetch()
-standardMean()
-#lineDiagramDecrypt()
-#barsSteDecrypt()
+#standardMean()
+lineDiagramDecrypt()
+barsSteDecrypt()
 #lineDiagramInsert()
 #barsSteInsert()
 #lineDiagramEncrypt()

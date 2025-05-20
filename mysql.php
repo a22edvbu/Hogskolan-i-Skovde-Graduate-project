@@ -120,7 +120,7 @@
 
                 // Default function
             } else if ($_POST['sqlOperation'] == 'insertAll') {
-                if (($handle = fopen('structuredEmails500.csv', "r")) !== false) {
+                if (($handle = fopen('structuredEmails8k.csv', "r")) !== false) {
                     $header = fgetcsv($handle); // Skip the header
 
                     $querystring = 'INSERT INTO emails (ID, Date, Mail_From, Mail_To, Subject, Body) 
@@ -139,12 +139,12 @@
                         
                         $measureTime5 = $stopMeasure5 - $startMeasure5;
                         
-                        $stmt->bindParam(':ID', $row[0]);
-                        $stmt->bindParam(':DATE', $row[1]);
-                        $stmt->bindParam(':MAIL_FROM', $row[2]);
-                        $stmt->bindParam(':MAIL_TO', $row[3]);
-                        $stmt->bindParam(':SUBJECT', $row[4]);
-                        $stmt->bindParam(':BODY', $encryptedBody);
+                        $stmt->bindValue(':ID', $row[0]);
+                        $stmt->bindValue(':DATE', $row[1]);
+                        $stmt->bindValue(':MAIL_FROM', $row[2]);
+                        $stmt->bindValue(':MAIL_TO', $row[3]);
+                        $stmt->bindValue(':SUBJECT', $row[4]);
+                        $stmt->bindValue(':BODY', $encryptedBody);
                         
                         $startMeasureInsert = microtime(true);
                         $stmt->execute();
@@ -181,9 +181,9 @@
 
                     logTime("sqlInsert", $measureArrInsert);
                     
-                    $querystring = 'DELETE FROM emails'; 
-                    $stmt = $pdo->prepare($querystring);
-                    $stmt->execute();
+                    $querystring2 = 'DELETE FROM emails'; 
+                    $stmt2 = $pdo->prepare($querystring2);
+                    $stmt2->execute();
 
                 } else {
                     echo "Failed to open file.";
