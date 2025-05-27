@@ -100,7 +100,7 @@ def lineDiagramDecrypt():
     plt.plot(df1['AvgDecrypt'] * 1000, label='MySQL')
     plt.plot(df2['AvgDecrypt'] * 1000, label='MongoDb')
     
-    plt.title('Decrypteringstid 8000 rader')
+    plt.title('Dekrypteringstid 8000 rader')
     plt.xlabel('Antal fetches')
     plt.ylabel('Responstid (ms)')
     plt.legend()
@@ -127,7 +127,7 @@ def barsSteDecrypt():
 
     plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
     plt.xticks(x_pos, x_labels)
-    plt.title("Medelvärde decrypteringstid 8000 rader")
+    plt.title("Medelvärde dekrypteringstid 8000 rader")
     plt.ylabel("Responstid (ms)")
     plt.tight_layout()
     plt.savefig("./Measurements/Decrypt8000Bars.png")

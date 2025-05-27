@@ -199,13 +199,6 @@
             $stopmeasure3 = microtime(true);
             $measuredTime3 = $stopmeasure3 - $startmeasure3;
         }
-        // else {
-        //     echo "Default selected";
-        //     $querystring = 'SELECT * FROM emails';
-        //     $stmt = $pdo->prepare($querystring);
-        //     $stmt->execute();
-        //     $fetchedResults = $stmt->fetchAll(PDO::FETCH_ASSOC);     
-        // }
     ?>
     <h1 class="title">MySQL</h1>
     <p>
@@ -329,8 +322,10 @@
             // Only logs time when there is something new to add.
             // Sends ID and measured Time to be inserted into CSV data
             if (!empty($measureArr)) {
-                //logTime("sqlFilteredAll" . $queryLimit, $measureArr);
-                //logTime("sqlFilteredFetchALL" . $queryLimit, $measureFetchArr);
+                // !- REMOVE COMMENTS TO MEASURE -!
+                // --------------------------------
+                // logTime("sqlFilteredAll" . $queryLimit, $measureArr);
+                // logTime("sqlFilteredFetchALL" . $queryLimit, $measureFetchArr);
             }    
 ?>
 </body>

@@ -109,7 +109,6 @@
                     echo "Insert All selected";
                     $header = fgetcsv($handle); // Skip the header
                     
-                    // Encrypt the email body
                     $startMeasure4 = microtime(true);
                     while (($row = fgetcsv($handle)) !== false) {
 
@@ -161,7 +160,6 @@
                     fclose($handle);
                     echo "Data inserted successfully.";
 
-                    // Optionally log to CSV or display
                     logTime("mdbInsert", $measureArrInsert); // If you want to log
                     $collection->deleteMany([]);
                 }
@@ -310,6 +308,8 @@
             // Only logs time when there is something new to add.
             // Sends ID and measured Time to be inserted into CSV data
             if (!empty($measureArr)) {
+                // !- REMOVE COMMENTS TO MEASURE -!
+                // --------------------------------
                 //logTime("mdbFilteredAll" . $queryLimit, $measureArr);
                 //logTime("mdbFilteredFetchALL" . $queryLimit, $measureFetchArr);
 

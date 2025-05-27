@@ -101,7 +101,7 @@ def lineDiagramDecrypt():
     plt.plot(df1['AvgDecrypt'] * 1000, label='MySQL')
     plt.plot(df2['AvgDecrypt'] * 1000, label='MongoDb')
     
-    plt.title('Decrypteringstid 500 rader')
+    plt.title('Dekrypteringstid 500 rader')
     plt.xlabel('Antal fetches')
     plt.ylabel('Responstid (ms)')
     plt.legend()
@@ -128,7 +128,7 @@ def barsSteDecrypt():
 
     plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
     plt.xticks(x_pos, x_labels)
-    plt.title("Medelvärde decrypteringstid 500 rader")
+    plt.title("Medelvärde dekrypteringstid 500 rader")
     plt.ylabel("Responstid (ms)")
     plt.tight_layout()
     plt.savefig("./Measurements/Decrypt500Bars.png")
@@ -212,12 +212,81 @@ def barsSteEncrypt():
     plt.savefig("./Measurements/Encrypt500Bars.png")
     plt.show()
     
+
+def lineDiagramInsert2():
+    plt.figure(figsize=(12,5))
+    
+    y1 = df3['Insert'] - df3['AvgEncrypt']
+    y2 = df4['Insert'] - df4['AvgEncrypt']
+    
+    y1 * 1000
+    y2 * 1000
+    
+    plt.plot(y1, label='MySQL')
+    plt.plot(y2, label='MongoDb')
+    
+    plt.title('Inserttid 500 rader (Utan krypteringstid)')
+    plt.xlabel('Antal fetches')
+    plt.ylabel('Responstid (ms)')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("./Measurements/InsertWithoutEncrypt500Line.png")
+    plt.show()
+    
+def barsSteInsert2():
+    plt.figure(figsize=(6,5))
+    
+    
+    
+    y1 = df3['AvgEncrypt'] 
+    y2 = df4['AvgEncrypt'] 
+    
+    y_means = [y1.mean(), y2.mean()]
+    
+    # Pivot the data to have 'Product' as columns and 'Segment' as the index
+    pivot_df = df.pivot(index='Segment',
+                        columns='Product',
+                        values='Amount_sold')
+
+    # New dataframe with values on a 100% scale
+    pivot_df_percentage = pivot_df.div(pivot_df.sum(axis=1), axis=0) * 100
+
+    # Create a grouped barplot
+    pivot_df_percentage.plot.bar(stacked=True,
+                    grid=True)
+
+    # Add a legend
+    plt.legend(bbox_to_anchor=(1.04, 1), # shift the legend 4% on the right
+            loc='upper left')
+
+    # Display the plot
+    plt.show()
+
+    # print(y_means)
+
+    # # Standard Error for each bar
+    # y_sems = [y1.std(ddof=1) / np.sqrt(len(y1)), y2.std(ddof=1) / np.sqrt(len(y2))]
+
+    # x_labels = ["MySQL", "MongoDB"]
+    # x_pos = np.arange(len(x_labels))
+    # colors = ['tab:blue', 'tab:orange']
+
+    # plt.bar(x_pos, y_means, yerr=y_sems, color=colors, capsize=10)
+    # plt.xticks(x_pos, x_labels)
+    # plt.title("Medelvärde inserttid 500 rader (utan krypteringstid)")
+    # plt.ylabel("Responstid (ms)")
+    # plt.tight_layout()
+    # plt.savefig("./Measurements/InsertWithoutEncrypt500Bars.png")
+    # plt.show()
+    
 #lineDiagramFetch()
 #barsSteFetch()
-standardMean()
+#standardMean()
 #lineDiagramDecrypt()
 #barsSteDecrypt()
 #lineDiagramInsert()
 #barsSteInsert()
+lineDiagramInsert2()
+barsSteInsert2()
 #lineDiagramEncrypt()
 #barsSteEncrypt()
